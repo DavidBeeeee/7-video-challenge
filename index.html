@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7 Video Challenge — Build With Bee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #111827;
+  --card:    #1e2d40;
+  --card2:   #243448;
+  --border:  #2e4460;
+  --cream:   #f0f9ff;
+  --soft:    #bae6fd;
+  --muted:   #7eb8d4;
+  --teal:    #2dd4bf;
+  --cyan:    #67e8f9;
+  --green:   #4ade80;
+  --blue:    #60a5fa;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 19px;
+  line-height: 1.75;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 100% 60% at 15% 5%,  rgba(96,165,250,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 70%  50% at 85% 85%, rgba(45,212,191,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50%  40% at 50% 50%, rgba(103,232,249,0.03) 0%, transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── PROGRESS BAR ── */
+#progress-bar-wrap {
+  position:fixed; top:0; left:0; right:0;
+  z-index:100;
+  background: rgba(17,24,39,0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display:flex; align-items:center; gap:16px;
+}
+.logo {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:18px; letter-spacing:0.12em;
+  color:var(--teal); flex-shrink:0;
+}
+#progress-track {
+  flex:1; height:3px;
+  background:var(--border); border-radius:2px; overflow:hidden;
+}
+#progress-fill {
+  height:100%;
+  background:linear-gradient(90deg,var(--teal),var(--cyan));
+  border-radius:2px;
+  transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+  width:0%;
+}
+#progress-label {
+  font-family:'Space Mono',monospace;
+  font-size:11px; color:var(--muted);
+  letter-spacing:0.1em; white-space:nowrap; flex-shrink:0;
+}
+
+/* ── SCREENS ── */
+.screen {
+  display:none;
+  min-height:100vh;
+  padding:108px 28px 90px;
+  max-width:800px;
+  margin:0 auto;
+  position:relative; z-index:1;
+}
+.screen.active {
+  display:flex; flex-direction:column; justify-content:flex-start;
+}
+/* Short-content screens benefit from vertical centering */
+#screen-0.active,
+#screen-1.active,
+#screen-2a.active,
+#screen-2b.active,
+#screen-3.active,
+#screen-4.active,
+#screen-5.active {
+  justify-content:center;
+}
+.screen.anim-in  { animation: fadeIn  0.35s ease forwards; }
+.screen.anim-out { animation: fadeOut 0.2s  ease forwards; }
+
+@keyframes fadeIn  { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-12px)} }
+
+/* ── VIDEO JOURNAL transitions ── */
+#video-journal-content.slide-out { animation: slideOut 0.22s ease forwards; }
+#video-journal-content.slide-in  { animation: slideIn  0.3s  ease forwards; }
+@keyframes slideOut { from{opacity:1;transform:translateX(0)}     to{opacity:0;transform:translateX(-30px)} }
+@keyframes slideIn  { from{opacity:0;transform:translateX(30px)}  to{opacity:1;transform:translateX(0)} }
+
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-family:'Space Mono',monospace;
+  font-size:11px; letter-spacing:0.22em;
+  color:var(--teal); text-transform:uppercase; margin-bottom:14px;
+}
+.screen-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(38px,7.5vw,66px);
+  letter-spacing:0.03em; line-height:1.0;
+  margin-bottom:16px; color:var(--cream);
+}
+.screen-title .accent { color:var(--teal); }
+.screen-sub {
+  font-size:19px; color:var(--muted);
+  max-width:560px; margin-bottom:36px; line-height:1.8;
+}
+
+/* ── CHOICE CARDS ── */
+.choice-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:13px; margin-bottom:12px;
+}
+.choice-grid.one-col { grid-template-columns:1fr; }
+
+.choice-card {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:13px; padding:22px 24px;
+  cursor:pointer; transition:all 0.18s;
+  position:relative; user-select:none; text-align:left;
+}
+.choice-card:hover {
+  border-color:rgba(45,212,191,0.5);
+  background:var(--card2); transform:translateY(-2px);
+}
+.choice-card.selecting {
+  border-color:var(--teal);
+  background:rgba(45,212,191,0.13); transform:scale(0.97);
+}
+.choice-card .card-emoji { font-size:24px; margin-bottom:10px; display:block; }
+.choice-card .card-title {
+  font-weight:600; font-size:18px;
+  color:var(--cream); margin-bottom:5px;
+}
+.choice-card .card-sub { font-size:16px; color:var(--muted); line-height:1.55; }
+
+/* ── INPUTS ── */
+.input-group { margin-bottom:24px; }
+.input-label {
+  font-family:'Space Mono',monospace;
+  font-size:10px; letter-spacing:0.14em;
+  color:var(--teal); text-transform:uppercase;
+  margin-bottom:8px; display:block;
+}
+.input-hint {
+  font-size:16px; color:var(--muted);
+  font-style:italic; margin-bottom:9px;
+  display:block; line-height:1.55;
+}
+.text-input {
+  width:100%; background:var(--card);
+  border:1.5px solid var(--border); border-radius:9px;
+  padding:15px 18px; color:var(--cream);
+  font-family:'DM Sans',sans-serif;
+  font-size:18px; line-height:1.65;
+  resize:vertical; transition:border-color 0.2s;
+}
+.text-input:focus { outline:none; border-color:var(--teal); }
+.text-input::placeholder { color:#2e4460; }
+
+/* ── JOURNAL CARD ── */
+.journal-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:15px; padding:30px 30px 26px; margin-bottom:26px;
+}
+.journal-header {
+  display:flex; align-items:center; gap:14px; margin-bottom:22px;
+}
+.video-badge {
+  background:rgba(45,212,191,0.12);
+  border:1px solid rgba(45,212,191,0.3);
+  border-radius:7px; padding:5px 13px;
+  font-family:'Space Mono',monospace;
+  font-size:10px; letter-spacing:0.12em;
+  color:var(--teal); flex-shrink:0;
+}
+.video-title-text {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px; letter-spacing:0.05em; color:var(--cream);
+}
+.video-note {
+  font-size:17px; color:var(--muted); font-style:italic;
+  margin-bottom:26px; padding:14px 18px;
+  background:rgba(45,212,191,0.04);
+  border-left:2px solid rgba(45,212,191,0.35);
+  border-radius:0 7px 7px 0; line-height:1.7;
+}
+
+/* ── SCRIPT BOX ── */
+.script-box {
+  background:rgba(45,212,191,0.05);
+  border:1px solid rgba(45,212,191,0.22);
+  border-radius:11px; padding:20px 24px; margin-top:8px;
+}
+.script-label {
+  font-family:'Space Mono',monospace;
+  font-size:9px; letter-spacing:0.18em;
+  color:var(--muted); text-transform:uppercase; margin-bottom:12px;
+}
+.script-text {
+  font-family:'Playfair Display',serif;
+  font-style:italic; font-size:18px;
+  color:var(--cyan); line-height:1.9;
+}
+
+/* ── COMMIT BLOCK ── */
+.commit-wrap {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-left:3px solid var(--teal);
+  border-radius:0 13px 13px 0;
+  padding:26px 30px; margin-bottom:32px;
+}
+.commit-text {
+  font-family:'Playfair Display',serif;
+  font-style:italic; font-size:21px;
+  color:var(--cream); line-height:1.8;
+}
+.commit-text .fill { color:var(--teal); font-style:normal; font-weight:700; }
+
+/* ── LEVEL BADGE ── */
+.level-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(45,212,191,0.08);
+  border:1px solid rgba(45,212,191,0.25);
+  border-radius:20px; padding:6px 15px;
+  font-family:'Space Mono',monospace;
+  font-size:10px; letter-spacing:0.1em;
+  color:var(--teal); margin-bottom:20px;
+}
+
+/* ── RECAP SCREEN ── */
+.recap-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:15px; padding:28px 30px; margin-bottom:20px;
+}
+.recap-row {
+  display:flex; gap:16px; align-items:flex-start;
+  padding:14px 0; border-bottom:1px solid var(--border);
+}
+.recap-row:last-child { border-bottom:none; padding-bottom:0; }
+.recap-icon { font-size:22px; flex-shrink:0; width:32px; }
+.recap-label {
+  font-family:'Space Mono',monospace;
+  font-size:9px; letter-spacing:0.14em;
+  color:var(--muted); text-transform:uppercase; margin-bottom:4px;
+}
+.recap-value { font-size:19px; color:var(--cream); font-weight:500; }
+
+/* ── GUIDELINES ── */
+.guideline-list { display:flex; flex-direction:column; gap:14px; margin-bottom:28px; }
+.guideline-item {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:20px 22px;
+  display:flex; gap:16px; align-items:flex-start;
+}
+.guideline-num {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px; color:var(--teal);
+  line-height:1; flex-shrink:0; width:28px;
+}
+.guideline-title {
+  font-weight:600; font-size:19px;
+  color:var(--cream); margin-bottom:4px;
+}
+.guideline-desc { font-size:17px; color:var(--muted); line-height:1.65; }
+
+/* ── DM CARD ── */
+.dm-card {
+  background:linear-gradient(135deg,rgba(45,212,191,0.08) 0%,rgba(96,165,250,0.06) 100%);
+  border:1px solid rgba(45,212,191,0.3);
+  border-radius:15px; padding:28px 30px; margin-bottom:28px;
+}
+.dm-card h3 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px; letter-spacing:0.05em;
+  color:var(--cream); margin-bottom:10px;
+}
+.dm-card p { font-size:18px; color:var(--muted); line-height:1.7; margin-bottom:20px; }
+.dm-options { display:flex; gap:10px; flex-wrap:wrap; }
+.dm-btn {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:8px; padding:13px 22px;
+  color:var(--soft); font-size:17px; font-weight:500;
+  cursor:pointer; text-decoration:none;
+  transition:all 0.18s; display:inline-flex; align-items:center; gap:8px;
+}
+.dm-btn:hover { border-color:var(--teal); color:var(--cream); transform:translateY(-1px); }
+
+/* ── CHECKLIST ── */
+.check-list { display:flex; flex-direction:column; gap:11px; margin-bottom:32px; }
+.check-item {
+  display:flex; align-items:center; gap:15px;
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:11px; padding:16px 20px;
+  cursor:pointer; transition:all 0.2s; user-select:none;
+}
+.check-item:hover { border-color:rgba(45,212,191,0.4); }
+.check-item.checked { border-color:var(--green); background:rgba(74,222,128,0.06); }
+.check-box {
+  width:24px; height:24px; border:2px solid var(--border);
+  border-radius:6px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s; font-size:14px;
+}
+.check-item.checked .check-box { background:var(--green); border-color:var(--green); color:#0f172a; }
+.check-text { font-size:18px; color:var(--muted); flex:1; }
+.check-item.checked .check-text { color:var(--cream); }
+
+/* ── BUTTONS ── */
+.btn-row { display:flex; gap:12px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+
+.btn-primary {
+  background:var(--teal); color:#0f172a;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:19px; letter-spacing:0.1em;
+  padding:15px 40px; border:none; border-radius:9px;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-primary:hover { background:#5eead4; transform:translateY(-1px); }
+
+.btn-filmed {
+  background:linear-gradient(135deg,#2dd4bf,#60a5fa);
+  color:#0f172a;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:21px; letter-spacing:0.1em;
+  padding:17px 46px; border:none; border-radius:9px;
+  cursor:pointer; transition:all 0.2s; margin-top:8px;
+}
+.btn-filmed:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(45,212,191,0.25); }
+
+.btn-skip {
+  background:transparent; border:none;
+  color:var(--muted); font-size:14px;
+  cursor:pointer; text-decoration:underline;
+  text-underline-offset:3px; padding:8px;
+  transition:color 0.2s;
+}
+.btn-skip:hover { color:var(--soft); }
+
+.btn-back {
+  background:transparent;
+  border:1.5px solid var(--border); color:var(--muted);
+  font-size:15px; padding:13px 24px;
+  border-radius:9px; cursor:pointer; transition:all 0.2s;
+}
+.btn-back:hover { border-color:var(--teal); color:var(--cream); }
+
+.btn-restart {
+  background:transparent; border:none;
+  color:var(--muted); font-size:14px;
+  cursor:pointer; text-decoration:underline;
+  text-underline-offset:3px; padding:8px;
+}
+.btn-restart:hover { color:var(--cream); }
+
+.btn-print {
+  background:var(--teal); color:#0f172a;
+  border:none; border-radius:9px;
+  padding:14px 30px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:18px; letter-spacing:0.08em;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-print:hover { background:#5eead4; }
+
+/* ── PLAN OUTPUT ── */
+.plan-section {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:15px; padding:28px 30px;
+  margin-bottom:20px; position:relative; overflow:hidden;
+}
+.plan-section::before {
+  content:''; position:absolute;
+  top:0; left:0; width:3px; height:100%;
+}
+.plan-section.ps-commit::before { background:var(--teal); }
+.plan-section.ps-videos::before { background:var(--blue); }
+.ps-label {
+  font-family:'Space Mono',monospace;
+  font-size:9px; letter-spacing:0.18em;
+  color:var(--muted); text-transform:uppercase; margin-bottom:18px;
+}
+
+/* collapsible script rows */
+.plan-video-row {
+  border-bottom:1px solid var(--border);
+  padding:16px 0;
+}
+.plan-video-row:last-child { border-bottom:none; padding-bottom:0; }
+.plan-row-header {
+  display:flex; align-items:center; gap:14px;
+}
+.plan-vnum {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:32px; color:var(--teal);
+  line-height:1; flex-shrink:0; width:36px;
+}
+.plan-vname {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:18px; letter-spacing:0.05em;
+  color:var(--cream); flex:1;
+}
+.plan-view-btn {
+  background: var(--card2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 20px;
+  color: var(--cream);
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.plan-view-btn .arrow { font-size: 10px; transition: transform 0.25s; }
+.plan-view-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+.plan-edit-link {
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.18s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.plan-edit-link:hover { color: var(--cream); }
+.plan-vscript-wrap {
+  display:none; padding:14px 0 4px 50px;
+}
+.plan-video-row.open .plan-vscript-wrap { display:block; }
+.plan-vscript {
+  font-family:'Playfair Display',serif;
+  font-style:italic; font-size:17px;
+  color:var(--muted); line-height:1.75;
+}
+
+/* ── MISSION CARD ── */
+.mission-card {
+  background:linear-gradient(135deg,rgba(45,212,191,0.1) 0%,rgba(96,165,250,0.06) 100%);
+  border:1px solid rgba(45,212,191,0.3);
+  border-radius:15px; padding:34px;
+  text-align:center; margin:28px 0;
+}
+.m-label {
+  font-family:'Space Mono',monospace;
+  font-size:10px; letter-spacing:0.18em;
+  color:var(--teal); text-transform:uppercase; margin-bottom:14px;
+}
+.m-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px; letter-spacing:0.04em;
+  color:var(--cream); margin-bottom:18px;
+}
+.m-cta { font-size:18px; color:var(--muted); text-align:left; line-height:1.75; }
+
+/* ── CTA ── */
+.cta-section {
+  background:linear-gradient(135deg,#0c3d50 0%,#0a2e44 100%);
+  border:1px solid rgba(45,212,191,0.25);
+  border-radius:15px; padding:48px 44px;
+  text-align:center; margin-top:32px;
+}
+.cta-section h2 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(32px,5vw,50px);
+  letter-spacing:0.03em; color:var(--cream); margin-bottom:12px;
+}
+.cta-section p {
+  font-size:18px; color:#93c5d4;
+  margin-bottom:28px; max-width:440px;
+  margin-left:auto; margin-right:auto;
+}
+.btn-cta {
+  display:inline-block; background:var(--teal); color:#0f172a;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px; letter-spacing:0.1em;
+  padding:16px 46px; border-radius:9px;
+  text-decoration:none; transition:all 0.2s;
+}
+.btn-cta:hover { background:#5eead4; transform:translateY(-1px); }
+
+/* ── WELCOME ── */
+.welcome-eyebrow {
+  font-family:'Space Mono',monospace;
+  font-size:11px; letter-spacing:0.22em;
+  color:var(--teal); text-transform:uppercase; margin-bottom:22px;
+}
+.welcome-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(54px,12vw,92px);
+  letter-spacing:0.02em; line-height:0.95; margin-bottom:28px;
+}
+.welcome-title .l1 { display:block; color:var(--cream); }
+.welcome-title .l2 { display:block; color:var(--teal); }
+.welcome-title .l3 { display:block; color:var(--cyan); font-size:0.5em; letter-spacing:0.06em; }
+.welcome-sub {
+  font-size:19px; color:var(--soft);
+  max-width:500px; line-height:1.8; margin-bottom:40px;
+}
+.welcome-step .slabel {
+  font-size:11px; color:var(--muted); letter-spacing:0.1em;
+  text-transform:uppercase; margin-bottom:3px; font-family:'Space Mono',monospace;
+}
+.welcome-step .st { font-size:16px; color:var(--soft); line-height:1.35; font-weight:500; }
+
+.bounce-arrow {
+  font-size:28px;
+  display:inline-block;
+  margin-bottom:14px;
+  animation: bounceDown 1.4s ease-in-out infinite;
+  color:var(--teal);
+  line-height:1;
+}
+@keyframes bounceDown {
+  0%,100% { transform:translateY(0); }
+  50%      { transform:translateY(9px); }
+}
+
+/* ── PROGRESS DOTS ── */
+.welcome-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 36px;
+  max-width: 380px;
+  border-left: 2px solid rgba(45,212,191,0.25);
+}
+.welcome-step {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(45,212,191,0.1);
+}
+.welcome-step:last-child { border-bottom: none; }
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 600px) {
+
+  /* Progress bar */
+  #progress-bar-wrap {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  .logo { font-size: 15px; }
+  #progress-label { font-size: 10px; }
+
+  /* Screens */
+  .screen {
+    padding: 90px 20px 80px;
+  }
+
+  /* Typography */
+  .screen-title {
+    font-size: clamp(32px, 9vw, 52px);
+  }
+  .screen-sub {
+    font-size: 17px;
+    margin-bottom: 28px;
+  }
+
+  /* Welcome */
+  .welcome-title {
+    font-size: clamp(48px, 14vw, 72px);
+  }
+  .welcome-sub {
+    font-size: 17px;
+    margin-bottom: 28px;
+  }
+  .welcome-steps {
+    max-width: 100%;
+  }
+
+  /* Choice cards — single column on mobile */
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    padding: 16px 24px;
+  }
+  .btn-filmed {
+    width: 100%;
+    text-align: center;
+    font-size: 19px;
+    padding: 16px 24px;
+  }
+  .btn-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn-row .btn-back,
+  .btn-row .btn-skip {
+    align-self: flex-start;
+  }
+
+  /* Journal card */
+  .journal-card {
+    padding: 22px 20px;
+  }
+
+  /* Script editor */
+  .script-view-card {
+    padding: 22px 18px;
+  }
+  .script-editor {
+    font-size: 17px;
+    padding: 16px 16px;
+  }
+
+  /* Recap */
+  .recap-card { padding: 20px; }
+  .recap-value { font-size: 17px; }
+
+  /* Guidelines */
+  .guideline-item { padding: 16px 16px; }
+  .guideline-num { font-size: 24px; }
+  .guideline-title { font-size: 17px; }
+
+  /* DM card */
+  .dm-card { padding: 22px 20px; }
+  .dm-options { flex-direction: column; }
+  .dm-btn { width: 100%; justify-content: center; }
+
+  /* Plan screen */
+  .plan-section { padding: 22px 18px; }
+  .plan-vnum { font-size: 26px; width: 30px; }
+  .plan-vname { font-size: 16px; }
+  .plan-view-btn { padding: 7px 14px; font-size: 14px; }
+  .plan-vscript-wrap { padding-left: 36px; }
+  .plan-vscript { font-size: 15px; }
+
+  /* Mission + CTA */
+  .mission-card { padding: 24px 20px; }
+  .cta-section { padding: 32px 20px; }
+  .cta-section p { font-size: 16px; }
+
+  /* Commit block */
+  .commit-wrap { padding: 20px 22px; }
+  .commit-text { font-size: 18px; }
+
+  /* Checklist */
+  .check-text { font-size: 16px; }
+  .check-item { padding: 14px 16px; }
+
+  /* Video dots */
+  .video-progress { margin-bottom: 18px; }
+}
+
+/* ── PROGRESS DOTS ── */
+.video-progress { display:flex; align-items:center; gap:9px; margin-bottom:26px; }
+.vdot { width:9px; height:9px; border-radius:50%; background:var(--border); transition:all 0.3s; }
+.vdot.done { background:var(--teal); }
+.vdot.active { background:var(--cyan); width:26px; border-radius:4px; }
+
+/* ── INFO BOX ── */
+.info-box {
+  background:rgba(96,165,250,0.07);
+  border-left:3px solid rgba(96,165,250,0.4);
+  border-radius:0 9px 9px 0;
+  padding:16px 20px; margin-bottom:28px;
+  font-size:17px; color:var(--muted); line-height:1.65;
+}
+
+/* ── SCRIPT VIEW ── */
+.script-view-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 30px 30px 24px;
+  margin-bottom: 20px;
+}
+.sv-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+}
+.sv-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px; letter-spacing: 0.05em; color: var(--cream);
+}
+.sv-instruction {
+  font-size:17px; color:var(--muted); font-style:italic;
+  line-height:1.7; margin-bottom:18px;
+  padding:12px 16px;
+  background:rgba(45,212,191,0.04);
+  border-left:2px solid rgba(45,212,191,0.35);
+  border-radius:0 7px 7px 0;
+}
+.script-editor {
+  width: 100%;
+  background: rgba(15,23,42,0.6);
+  border: 1.5px solid rgba(45,212,191,0.3);
+  border-radius: 10px;
+  padding: 20px 22px;
+  color: var(--cyan);
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 19px;
+  line-height: 1.9;
+  resize: vertical;
+  transition: border-color 0.2s;
+  min-height: 200px;
+}
+.script-editor:focus { outline: none; border-color: var(--teal); }
+.sv-hint {
+  font-size:15px; color:var(--muted); margin-top:10px;
+  font-style:italic;
+}
+
+/* ── FILMED CARD ── */
+.filmed-card {
+  background: linear-gradient(135deg, rgba(45,212,191,0.07) 0%, rgba(96,165,250,0.05) 100%);
+  border: 1px solid rgba(45,212,191,0.25);
+  border-radius: 15px;
+  padding: 26px 28px;
+  display: flex; flex-direction: column; gap: 14px;
+  margin-bottom: 8px;
+}
+.filmed-card-inner {
+  display: flex; align-items: center; gap: 18px;
+}
+.filmed-icon { font-size: 36px; flex-shrink: 0; }
+.filmed-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 0.04em; color: var(--cream);
+  margin-bottom: 4px;
+}
+.filmed-sub { font-size:17px; color:var(--muted); }
+
+
+@media print {
+  #progress-bar-wrap,.btn-row,.btn-filmed,.cta-section { display:none!important; }
+  .screen { padding:20px; }
+  body { background:white; color:black; }
+  .plan-vscript-wrap { display:block!important; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar-wrap">
+  <div class="logo">Build With Bee</div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
+  <div id="progress-label">START</div>
+</div>
+
+<!-- ══ S0 WELCOME ══ -->
+<div class="screen active" id="screen-0">
+  <div class="welcome-eyebrow">Build With Bee — 7 Video Challenge</div>
+  <h1 class="welcome-title">
+    <span class="l1">7 Videos.</span>
+    <span class="l2">Your Voice.</span>
+    <span class="l3">Your First Real Audience.</span>
+  </h1>
+  <p class="welcome-sub">You don't need to go viral. You don't need fancy gear. You just need to show up — and this will get you ready to do exactly that.</p>
+  <div class="welcome-steps">
+    <div class="welcome-step"><div class="slabel">Step 01</div><div class="st">Find your level</div></div>
+    <div class="welcome-step"><div class="slabel">Step 02</div><div class="st">Set your goal</div></div>
+    <div class="welcome-step"><div class="slabel">Step 03</div><div class="st">Build your scripts</div></div>
+    <div class="welcome-step"><div class="slabel">Step 04</div><div class="st">Press record</div></div>
+  </div>
+  <div class="bounce-arrow">↓</div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="goNext()">Let's Do This</button>
+  </div>
+</div>
+
+<!-- ══ S1 POSTED? ══ -->
+<div class="screen" id="screen-1">
+  <div class="eyebrow">Finding Your Level</div>
+  <h2 class="screen-title">Have you ever posted a <span class="accent">short-form video</span> online?</h2>
+  <p class="screen-sub">TikTok, Reels, Shorts — anything counts. Even if you deleted it the next day.</p>
+  <div class="choice-grid">
+    <div class="choice-card" onclick="autoAdvance(this,'posted','no')">
+      <span class="card-emoji">🫣</span>
+      <div class="card-title">No, never</div>
+      <div class="card-sub">Haven't posted yet — or recorded once and never put it out.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'posted','yes')">
+      <span class="card-emoji">📱</span>
+      <div class="card-title">Yes, I have</div>
+      <div class="card-sub">Posted before — even if it was just a few times or I fell off.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S2a BLOCKER ══ -->
+<div class="screen" id="screen-2a">
+  <div class="eyebrow">Finding Your Level</div>
+  <h2 class="screen-title">What's the <span class="accent">main thing</span> holding you back?</h2>
+  <p class="screen-sub">Be honest — there's no wrong answer. This helps us prepare you for exactly that moment.</p>
+  <div class="choice-grid">
+    <div class="choice-card" onclick="autoAdvance(this,'blocker','ideas')">
+      <span class="card-emoji">🧠</span>
+      <div class="card-title">I don't know what to say</div>
+      <div class="card-sub">I stare at the camera and go completely blank.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'blocker','camera')">
+      <span class="card-emoji">😬</span>
+      <div class="card-title">I hate how I look on camera</div>
+      <div class="card-sub">I've tried but I cringe watching myself back.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'blocker','nothing')">
+      <span class="card-emoji">🤷</span>
+      <div class="card-title">I don't have a business yet</div>
+      <div class="card-sub">Not sure what my "thing" is or if anyone would care.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'blocker','procrastinating')">
+      <span class="card-emoji">⏰</span>
+      <div class="card-title">I keep putting it off</div>
+      <div class="card-sub">I've been meaning to start. Life just keeps happening.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S2b HISTORY ══ -->
+<div class="screen" id="screen-2b">
+  <div class="eyebrow">Finding Your Level</div>
+  <h2 class="screen-title">How would you describe your <span class="accent">posting history?</span></h2>
+  <p class="screen-sub">Pick the one that feels most true, even if it's a little uncomfortable.</p>
+  <div class="choice-grid one-col">
+    <div class="choice-card" onclick="autoAdvance(this,'history','few')">
+      <div class="card-title">I've posted a few times but never consistently</div>
+      <div class="card-sub">Made a couple of videos, they went nowhere, and I stopped.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'history','stops')">
+      <div class="card-title">I post sometimes but always fall off after a week or two</div>
+      <div class="card-sub">Start strong, life happens, disappear for months.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'history','was')">
+      <div class="card-title">I was consistent once but stopped for a while</div>
+      <div class="card-sub">Had a rhythm going, something broke it, haven't come back.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S3 BUSINESS? ══ -->
+<div class="screen" id="screen-3">
+  <div class="eyebrow">Finding Your Level</div>
+  <h2 class="screen-title">Are you <span class="accent">building a business</span> or working toward one?</h2>
+  <p class="screen-sub">This shapes everything about what your videos should say and who they're for.</p>
+  <div class="choice-grid one-col">
+    <div class="choice-card" onclick="autoAdvance(this,'business','yes')">
+      <span class="card-emoji">🚀</span>
+      <div class="card-title">Yes — I have an active business</div>
+      <div class="card-sub">I have clients, an offer, or a service I'm actively selling or building toward.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'business','building')">
+      <span class="card-emoji">🔨</span>
+      <div class="card-title">I'm in the early stages of building something</div>
+      <div class="card-sub">I have a direction but haven't fully launched yet.</div>
+    </div>
+    <div class="choice-card" onclick="autoAdvance(this,'business','no')">
+      <span class="card-emoji">🌱</span>
+      <div class="card-title">Not yet — I'm still figuring out my thing</div>
+      <div class="card-sub">I want to start creating but I'm still exploring what I want to say.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S4 PRIMARY GOAL ══ -->
+<div class="screen" id="screen-4">
+  <div class="eyebrow">Your Goal</div>
+  <h2 class="screen-title">What do you <span class="accent">actually want</span> from this?</h2>
+  <p class="screen-sub">Not what you think you should want. What you actually want right now.</p>
+  <div class="choice-grid" id="goal-grid"></div>
+</div>
+
+<!-- ══ S5 MINI GOAL ══ -->
+<div class="screen" id="screen-5">
+  <div class="eyebrow">Your Win</div>
+  <h2 class="screen-title">What does <span class="accent">winning</span> look like for you?</h2>
+  <p class="screen-sub">Pick the one that makes you go "yeah — that one." That's your finish line.</p>
+  <div class="choice-grid one-col" id="minigoal-grid"></div>
+</div>
+
+<!-- ══ S6 NAME + COMMITMENT ══ -->
+<div class="screen" id="screen-6">
+  <div class="eyebrow">Your Promise</div>
+  <h2 class="screen-title">Let's make it <span class="accent">real.</span></h2>
+  <p class="screen-sub">Read this out loud. Mean every word of it.</p>
+  <div class="commit-wrap">
+    <div class="commit-text">
+      By the end of this challenge I will <span class="fill" id="commitment-fill">—</span>, even if it's messy, even if nobody watches, and even if I have to do it scared.
+    </div>
+  </div>
+  <div class="input-group">
+    <label class="input-label">What's your first name?</label>
+    <input type="text" class="text-input" id="user-name" placeholder="So we can personalize your scripts" autocomplete="given-name" oninput="state.name = this.value">
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="goToRecapWithNameCheck()">I'm In — Show Me What's Next</button>
+    <button class="btn-back" onclick="goBack()">Back</button>
+  </div>
+</div>
+
+<!-- ══ S-RECAP ══ -->
+<div class="screen" id="screen-recap">
+  <div class="eyebrow">Your Challenge Profile</div>
+  <h2 class="screen-title">Here's what we <span class="accent">know about you.</span></h2>
+  <p class="screen-sub">Take a second to see yourself clearly. This is the foundation everything is built on.</p>
+
+  <div class="recap-card" id="recap-card-content">
+    <!-- populated by JS -->
+  </div>
+
+  <div class="info-box" id="recap-level-message"></div>
+
+  <h3 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;color:var(--cream);margin-bottom:18px;margin-top:8px;">
+    Here's how the challenge works.
+  </h3>
+  <div class="guideline-list">
+    <div class="guideline-item">
+      <div class="guideline-num">1</div>
+      <div>
+        <div class="guideline-title">7 videos. Your timeline.</div>
+        <div class="guideline-desc">You don't have to post all 7 in 7 days. Some people move fast, some take a few weeks. What matters is that you finish. Each video builds on the last.</div>
+      </div>
+    </div>
+    <div class="guideline-item">
+      <div class="guideline-num">2</div>
+      <div>
+        <div class="guideline-title">Fill in the prompts. Film the script.</div>
+        <div class="guideline-desc">Every video has a set of journal prompts. Your answers become your script. You don't need to memorize it — just read it off your phone or use it as a guide.</div>
+      </div>
+    </div>
+    <div class="guideline-item">
+      <div class="guideline-num">3</div>
+      <div>
+        <div class="guideline-title">Done is better than perfect.</div>
+        <div class="guideline-desc">Your first video doesn't have to be good. It just has to exist. You'll be amazed how much better Video 7 is than Video 1 — and that growth is the whole point.</div>
+      </div>
+    </div>
+    <div class="guideline-item">
+      <div class="guideline-num">4</div>
+      <div>
+        <div class="guideline-title">David will personally review your videos.</div>
+        <div class="guideline-desc">Share them in the challenge group or send them directly to David. You'll get real feedback on what you're doing right — not just what to fix.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="goNext()">Got It — Let's Get Prepped</button>
+    <button class="btn-back" onclick="goBack()">Back</button>
+  </div>
+</div>
+
+<!-- ══ S-PREP ══ -->
+<div class="screen" id="screen-prep">
+  <div class="eyebrow">Let's Get Prepped</div>
+  <h2 class="screen-title">One thing before <span class="accent">we start.</span></h2>
+  <p class="screen-sub">David works best when he knows you're starting. A quick message means he'll be watching for your first video and ready to give you feedback when it's up.</p>
+
+  <div class="dm-card">
+    <h3>📣 Let David Know You're In</h3>
+    <p>Send a quick message in the group or by email — just say "I'm starting the 7 video challenge." That's it. He'll take it from there.</p>
+    <div class="dm-options">
+      <a class="dm-btn" href="https://facebook.com/groups/coloradobiz" target="_blank">👥 Find @DavidBeeeee in the Group</a>
+      <a class="dm-btn" href="mailto:contact@DavidBee.me?subject=Starting the 7 Video Challenge&body=Hey David — I'm starting the 7 video challenge!" target="_blank">✉️ Send an Email</a>
+    </div>
+  </div>
+
+  <div class="info-box">
+    💡 Already messaged him? Perfect — move on. He'll see your first video when you post it.
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="goNext()">Done — Let's Get Camera-Ready</button>
+    <button class="btn-skip" onclick="goNext()">Skip for now — get me camera-ready</button>
+    <button class="btn-back" onclick="goBack()">Back</button>
+  </div>
+</div>
+
+<!-- ══ S-CHECKLIST ══ -->
+<div class="screen" id="screen-checklist">
+  <div class="eyebrow">Before You Press Record</div>
+  <h2 class="screen-title">Five things. <span class="accent">That's it.</span></h2>
+  <p class="screen-sub">Check these off before you film your first video. You only need to do this once — after this, you'll know the drill.</p>
+  <div class="check-list">
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">🔋 My phone is charged and propped up somewhere stable</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">🪟 I'm facing a window or a decent light source — not a wall</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">🧹 My background looks intentional — messy is fine if it's your messy</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">🗣️ I've committed to reading my script out loud before I hit record</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="check-text">💛 I've accepted that the first take won't be perfect — and that's exactly the point</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="startVideos()">I'm Ready — Build My First Script</button>
+    <button class="btn-back" onclick="goBack()">Back</button>
+  </div>
+</div>
+
+<!-- ══ S7 VIDEO JOURNAL ══ -->
+<div class="screen" id="screen-7">
+  <div class="eyebrow" id="video-eyebrow">Video 1 of 7</div>
+  <div class="video-progress" id="video-dots"></div>
+  <div id="video-journal-content"></div>
+</div>
+
+<!-- ══ SCRIPT VIEW SCREEN ══ -->
+<div class="screen" id="screen-script">
+  <div class="eyebrow" id="script-eyebrow">Video 1 of 7 — Your Script</div>
+  <div class="video-progress" id="script-dots"></div>
+
+  <div class="script-view-card">
+    <div class="sv-header">
+      <div class="video-badge" id="sv-badge">VIDEO 1</div>
+      <div class="sv-title" id="sv-title">I'm Doing This</div>
+    </div>
+    <p class="sv-instruction">This is your script. Read it, tweak any word that doesn't sound like you, then press record. You've got this.</p>
+    <textarea class="script-editor" id="script-editor" rows="8" placeholder="Your script will appear here..."></textarea>
+    <p class="sv-hint">✏️ Edit freely — change any word until it sounds exactly like you.</p>
+  </div>
+
+  <div class="filmed-card">
+    <div class="filmed-card-inner">
+      <div class="filmed-icon">🎬</div>
+      <div>
+        <div class="filmed-title">Ready when you are.</div>
+        <div class="filmed-sub">Film it, then come back and tap the button below.</div>
+      </div>
+    </div>
+    <button class="btn-filmed" id="btn-filmed-main">✅ I Filmed It!</button>
+    <button class="btn-skip" id="btn-filmed-skip">Skip this one for now</button>
+  </div>
+
+  <div class="btn-row" style="margin-top:8px;">
+    <button class="btn-back" onclick="goBackToPrompts()">← Back to Prompts</button>
+    <button class="btn-skip" style="font-size:14px;color:#4a6a80;" onclick="skipToEnd()">Skip to the end — see my plan</button>
+  </div>
+</div>
+
+<!-- ══ PLAN SCREEN ══ -->
+<div class="screen" id="plan-screen">
+  <div id="plan-level-badge" class="level-badge"></div>
+  <h2 class="screen-title"><span id="plan-name-head">Your</span> <span class="accent">Challenge Plan</span></h2>
+  <p class="screen-sub">All 7 scripts, your commitment, and your mission for right now.</p>
+
+  <div id="plan-output"></div>
+
+  <div class="mission-card" id="mission-card">
+    <div class="m-label" id="mission-label">🎉 You Did It</div>
+    <div class="m-title" id="mission-title">ALL 7 VIDEOS — COMPLETE</div>
+    <div class="m-cta" id="mission-cta"></div>
+  </div>
+
+  <div class="btn-row" style="margin-bottom:32px;">
+    <button class="btn-print" onclick="window.print()">Save as PDF</button>
+    <button class="btn-restart" onclick="restartWizard()">Start Over</button>
+  </div>
+
+  <div class="cta-section">
+    <h2>You Don't Have to Do This Alone</h2>
+    <p>Join a free group of people exactly like you — showing up, posting videos, and cheering each other on. No cost. No pitch. Just people who get it.</p>
+    <a class="btn-cta" href="https://facebook.com/groups/coloradobiz" target="_blank">Join the Free Community →</a>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ── STATE ──────────────────────────────────────────────
+const state = {
+  posted:null, blocker:null, history:null, business:null,
+  goal:null, minigoal:null, minigoalText:'', name:'',
+  level:null, videos:{}
+};
+
+let screenOrder = ['screen-0','screen-1'];
+let currentIndex = 0;
+let currentVideoIndex = 0;
+let transitioning = false;
+let editingFromPlan = false;
+
+// ── SCREEN NAVIGATION ─────────────────────────────────
+function showScreen(id, direction='forward') {
+  if (transitioning) return;
+  transitioning = true;
+
+  const current = document.querySelector('.screen.active');
+  const next = document.getElementById(id);
+
+  if (current) {
+    current.classList.add('anim-out');
+    setTimeout(() => {
+      current.classList.remove('active','anim-out');
+      next.classList.add('active','anim-in');
+      setTimeout(() => { next.classList.remove('anim-in'); transitioning = false; }, 350);
+    }, 200);
+  } else {
+    next.classList.add('active','anim-in');
+    setTimeout(() => { next.classList.remove('anim-in'); transitioning = false; }, 350);
+  }
+
+  updateProgress(id);
+  setTimeout(() => window.scrollTo(0,0), 50);
+}
+
+function goNext() {
+  const cur = screenOrder[currentIndex];
+
+  if (cur === 'screen-1') {
+    screenOrder = state.posted === 'no'
+      ? ['screen-0','screen-1','screen-2a','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-prep','screen-checklist','screen-7','screen-script','plan-screen']
+      : ['screen-0','screen-1','screen-2b','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-prep','screen-checklist','screen-7','screen-script','plan-screen'];
+  }
+
+  if (cur === 'screen-3') {
+    determineLevel();
+    populateGoalGrid();
+    populateMiniGoalGrid();
+  }
+
+  currentIndex++;
+  if (currentIndex >= screenOrder.length) currentIndex = screenOrder.length-1;
+  showScreen(screenOrder[currentIndex]);
+}
+
+function goBack() {
+  if (currentIndex > 0) { currentIndex--; showScreen(screenOrder[currentIndex], 'back'); }
+}
+
+function goToRecapWithNameCheck() {
+  const nameInput = document.getElementById('user-name');
+  if (!nameInput.value.trim()) {
+    nameInput.style.borderColor = 'var(--teal)';
+    nameInput.placeholder = "Just your first name — we use it in your scripts ✨";
+    nameInput.focus();
+    setTimeout(() => {
+      nameInput.style.borderColor = '';
+      nameInput.placeholder = "So we can personalize your scripts";
+    }, 2500);
+    return;
+  }
+  goToRecap();
+}
+
+function goToRecap() {
+  populateRecap();
+  goNext();
+}
+
+function updateProgress(id) {
+  const total = screenOrder.length - 2;
+  const step = Math.max(0, currentIndex - 1);
+  const pct = total > 0 ? Math.min((step/total)*100, 100) : 0;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  const labels = {'screen-0':'START','screen-7':'PROMPTS','screen-script':'YOUR SCRIPT','screen-recap':'YOUR PROFILE','screen-prep':'PREP','screen-checklist':'PREP','plan-screen':'YOUR PLAN'};
+  document.getElementById('progress-label').textContent = labels[id||screenOrder[currentIndex]] || `STEP ${step} OF ${total}`;
+}
+
+// ── AUTO-ADVANCE ───────────────────────────────────────
+function autoAdvance(el, key, value) {
+  if (transitioning) return;
+  el.classList.add('selecting');
+  state[key] = value;
+  setTimeout(() => { el.classList.remove('selecting'); goNext(); }, 300);
+}
+
+// ── LEVEL DETERMINATION ───────────────────────────────
+function determineLevel() {
+  state.level = (state.posted==='yes' && (state.business==='yes'||state.business==='building')) ? 2 : 1;
+}
+
+// ── GOAL GRIDS ────────────────────────────────────────
+function populateGoalGrid() {
+  const grid = document.getElementById('goal-grid');
+  grid.innerHTML = '';
+  const opts = state.level===1 ? [
+    {e:'🎙️',t:'Get comfortable on camera',s:'Stop freezing and actually enjoy talking to a lens.',v:'comfortable'},
+    {e:'👤',t:'Build an audience around something I care about',s:'Find people who want to follow along.',v:'audience'},
+    {e:'💬',t:'Find my voice and my style',s:'Figure out what I want to say and how I say it.',v:'voice'},
+    {e:'🌱',t:'Just start — that\'s the whole goal',s:'I\'ve been waiting too long.',v:'start'}
+  ] : [
+    {e:'🎯',t:'Establish myself as an expert',s:'Be seen as credible and worth listening to.',v:'expert'},
+    {e:'📈',t:'Build an audience of potential clients',s:'People who are likely to hire or buy from me.',v:'clients'},
+    {e:'💼',t:'Generate real leads or conversations',s:'Videos that create actual business opportunities.',v:'leads'},
+    {e:'🔄',t:'Get consistent — finally',s:'I know what I\'m doing. I just need to stop stopping.',v:'consistent'}
+  ];
+  opts.forEach(o => {
+    const c = document.createElement('div');
+    c.className = 'choice-card';
+    c.onclick = function(){ autoAdvance(this,'goal',o.v); };
+    c.innerHTML = `<span class="card-emoji">${o.e}</span><div class="card-title">${o.t}</div><div class="card-sub">${o.s}</div>`;
+    grid.appendChild(c);
+  });
+}
+
+function populateMiniGoalGrid() {
+  const grid = document.getElementById('minigoal-grid');
+  grid.innerHTML = '';
+  const opts = state.level===1 ? [
+    {t:'Post my very first video ever — and actually survive it',v:'first'},
+    {t:'Film all 7 videos without quitting on myself',v:'all7'},
+    {t:'Find a content style that genuinely feels like me',v:'style'},
+    {t:'Make at least one video I\'m actually proud of',v:'proud'},
+    {t:'Get my first real comment or reply from a stranger',v:'comment'}
+  ] : [
+    {t:'Build a content habit I can actually maintain',v:'habit'},
+    {t:'Create at least one video that brings in a real lead',v:'lead'},
+    {t:'Feel genuinely confident talking about my business on camera',v:'confident'},
+    {t:'Make all 7 and figure out what resonates',v:'test'},
+    {t:'Post something I\'d proudly send to a potential client',v:'proud-l2'}
+  ];
+  opts.forEach(o => {
+    const c = document.createElement('div');
+    c.className = 'choice-card';
+    c.onclick = function(){
+      state.minigoal = o.v;
+      state.minigoalText = o.t.toLowerCase();
+      document.getElementById('commitment-fill').textContent = state.minigoalText;
+      autoAdvance(this,'minigoal',o.v);
+    };
+    c.innerHTML = `<div class="card-title">${o.t}</div>`;
+    grid.appendChild(c);
+  });
+}
+
+// ── RECAP ─────────────────────────────────────────────
+const blockerLabels = {ideas:'Not knowing what to say',camera:'Camera shyness',nothing:'Not having a business yet',procrastinating:'Putting it off'};
+const historyLabels = {few:'Posted a few times, never consistently',stops:'Posts sometimes but keeps falling off',was:'Was consistent once, took a break'};
+const businessLabels = {yes:'Active business',building:'Building something',no:'Still exploring'};
+const goalLabels = {comfortable:'Getting comfortable on camera',audience:'Building an audience',voice:'Finding my voice',start:'Just starting',expert:'Establishing expertise',clients:'Building a client audience',leads:'Generating leads',consistent:'Getting consistent'};
+const miniGoalMap = {
+  first:'post my very first video ever — and actually survive it',
+  all7:'film all 7 videos without quitting on myself',
+  style:'find a content style that genuinely feels like me',
+  proud:'make at least one video I\'m actually proud of',
+  comment:'get my first real comment or reply from a stranger',
+  habit:'build a content habit I can actually maintain',
+  lead:'create at least one video that brings in a real lead',
+  confident:'feel genuinely confident talking about my business on camera',
+  test:'make all 7 and figure out what resonates',
+  'proud-l2':'post something I\'d proudly send to a potential client'
+};
+
+function populateRecap() {
+  const name = state.name || 'You';
+  const level = state.level || 1;
+  const rows = [
+    {icon:'👋', label:'Name', value: name},
+    {icon: level===1?'⭐':'🔥', label:'Your Level', value: level===1?'Level 1 — The Person Series':'Level 2 — The Expert Series'},
+    {icon:'🎯', label:'Primary Goal', value: goalLabels[state.goal]||'—'},
+    {icon:'🏆', label:'Your Win', value: miniGoalMap[state.minigoal]||'—'},
+    {icon:'💼', label:'Business Stage', value: businessLabels[state.business]||'—'},
+    state.blocker ? {icon:'🔓', label:'Main Blocker', value: blockerLabels[state.blocker]||'—'} : null,
+    state.history ? {icon:'📅', label:'Posting History', value: historyLabels[state.history]||'—'} : null,
+  ].filter(Boolean);
+
+  const card = document.getElementById('recap-card-content');
+  card.innerHTML = rows.map(r => `
+    <div class="recap-row">
+      <div class="recap-icon">${r.icon}</div>
+      <div>
+        <div class="recap-label">${r.label}</div>
+        <div class="recap-value">${r.value}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const msg = document.getElementById('recap-level-message');
+  if (level===1) {
+    msg.innerHTML = `<strong style="color:var(--cream)">You're on Level 1 — The Person Series.</strong> Your 7 videos are about you as a person: who you are, what you believe, and what you've learned. No business required. Just your voice.`;
+  } else {
+    msg.innerHTML = `<strong style="color:var(--cream)">You're on Level 2 — The Expert Series.</strong> Your 7 videos position you as the go-to person in your space: your offer, your beliefs, your process, and your results. This is where your content starts working for your business.`;
+  }
+}
+
+// ── VIDEO DATA ────────────────────────────────────────
+const level1Videos = [
+  {
+    title:"I'm Doing This",
+    note:"No overthinking needed — this one is basically already written for you. Just say it to the camera. One take. Done.",
+    prebuilt:true,
+    script:()=>`Hey — I'm ${state.name||'me'}. I'm going to be posting some videos over the next few days. Stick around.`,
+    prompts:[]
+  },
+  {
+    title:"About Me",
+    note:"Three simple things about who you are. That's your whole video. The simpler the better — don't try to be interesting, just be real.",
+    prompts:[
+      {label:"I'm from ___",hint:"Where you grew up or where you live now — wherever feels most like home.",key:"v1p0",ph:"e.g. originally from Texas, living in Denver now"},
+      {label:"One thing most people don't know about me is ___",hint:"Something a little unexpected. Not a fun fact — something real.",key:"v1p1",ph:"e.g. I used to be a professional dog trainer before I got into marketing"},
+      {label:"I'm on here because ___",hint:"The honest reason. What finally made you decide to start?",key:"v1p2",ph:"e.g. I got tired of watching everyone else post and doing nothing myself"}
+    ],
+    compile:v=>`My name is ${state.name||'___'}, and I'm from ${v.v1p0||'___'}. One thing most people don't know about me is ${v.v1p1||'___'}. I'm on here because ${v.v1p2||'___'}.`
+  },
+  {
+    title:"Epiphany #1",
+    note:"Something you used to believe — until something changed your mind. This is the type of content that makes people stop scrolling and actually listen.",
+    prompts:[
+      {label:"Something I used to believe was ___",hint:"A belief you held that you now know was wrong, incomplete, or limiting.",key:"v2p0",ph:"e.g. that you needed to be an expert before you could share anything online"},
+      {label:"But then ___ happened and I realized ___",hint:"What was the moment or experience that shifted your thinking?",key:"v2p1",ph:"e.g. I watched someone with half my experience build a huge audience just by being honest"},
+      {label:"Now I believe ___",hint:"The thing you believe now. Say it with conviction.",key:"v2p2",ph:"e.g. that people don't follow expertise — they follow someone they can relate to"}
+    ],
+    compile:v=>`Something I used to believe was ${v.v2p0||'___'}. But then ${v.v2p1||'___'}. Now I believe ${v.v2p2||'___'}.`
+  },
+  {
+    title:"I'm Still Doing This",
+    note:"A quick check-in. You've already done 3 videos — that's more than most people ever do. What surprised you?",
+    prompts:[
+      {label:"The thing I didn't expect about doing this was ___",hint:"Be honest — good surprise or bad surprise, it's all content.",key:"v3p0",ph:"e.g. that I actually didn't hate watching myself back as much as I thought I would"}
+    ],
+    compile:v=>`I'm back. ${v.v3p0||'___'}.`
+  },
+  {
+    title:"About Me — Take 2",
+    note:"You've warmed up. Go a little deeper this time. The second version of this video is almost always better than the first — because you've stopped trying so hard.",
+    prompts:[
+      {label:"Something I didn't mention last time is ___",hint:"Something more personal or specific — something you were maybe a little afraid to say.",key:"v4p0",ph:"e.g. that I spent 12 years in a job I hated before I finally decided to change everything"},
+      {label:"The thing I actually want to be known for is ___",hint:"Not your job title — the impact you want to have on someone who watches you.",key:"v4p1",ph:"e.g. helping people realize they're already interesting — they just don't know it yet"}
+    ],
+    compile:v=>`Something I didn't mention last time is ${v.v4p0||'___'}. The thing I actually want to be known for is ${v.v4p1||'___'}.`
+  },
+  {
+    title:"Epiphany #2",
+    note:"A belief you hold that most people around you don't share. You don't need to be controversial — just honest. Honesty is what makes people feel less alone.",
+    prompts:[
+      {label:"A lot of people think ___ but I genuinely believe ___",hint:"What's the conventional wisdom in your world that you disagree with?",key:"v5p0",ph:"e.g. a lot of people think you need a big following before anyone will listen — but I believe one honest video reaches the right person"},
+      {label:"Here's why that matters to me ___",hint:"Make it personal. Why does this belief mean something to you specifically?",key:"v5p1",ph:"e.g. because I spent two years waiting to be 'ready' and it was the biggest waste of time"}
+    ],
+    compile:v=>`A lot of people think ${v.v5p0||'___'}. Here's why that matters to me: ${v.v5p1||'___'}.`
+  },
+  {
+    title:"What I Learned",
+    note:"The final video. Reflect honestly — this one tends to be the most powerful because you've actually done something real. People love watching someone grow in real time.",
+    prompts:[
+      {label:"When I started I thought ___",hint:"Your honest expectation going in — even if it was completely wrong.",key:"v6p0",ph:"e.g. that I'd hate every second of this"},
+      {label:"What actually happened was ___",hint:"The real experience. What surprised you most?",key:"v6p1",ph:"e.g. that it got easier way faster than I expected"},
+      {label:"If you're thinking about doing something like this, here's what I'd tell you ___",hint:"The one piece of advice you'd give someone exactly where you were 7 videos ago.",key:"v6p2",ph:"e.g. just do Video 1. The rest takes care of itself."}
+    ],
+    compile:v=>`When I started I thought ${v.v6p0||'___'}. What actually happened was ${v.v6p1||'___'}. If you're thinking about doing something like this — ${v.v6p2||'___'}.`
+  }
+];
+
+const level2Videos = [
+  {
+    title:"I'm Doing This",
+    note:"Frame it around your intention. What are you here to prove? Make it specific enough that the right person watches and thinks 'that's for me.'",
+    prompts:[
+      {label:"I'm doing this because I want to show that ___",hint:"The belief or idea you want to demonstrate through this challenge.",key:"v0p0",ph:"e.g. you don't have to be a flashy influencer to build real trust online"}
+    ],
+    compile:v=>`Hey — I'm ${state.name||'___'}. I'm doing a video challenge to prove that ${v.v0p0||'___'}. Follow along.`
+  },
+  {
+    title:"About My Business",
+    note:"Clear, simple, specific. Who do you help and what changes for them? Say it like you're explaining it to a smart friend over coffee — no jargon.",
+    prompts:[
+      {label:"I help ___ do ___ without ___",hint:"Fill this in simply — not a marketing statement, a real description.",key:"v1p0",ph:"e.g. I help new coaches get their first clients without spending money on ads"},
+      {label:"I got into this because ___",hint:"The real story. Why this work, why now, why you specifically?",key:"v1p1",ph:"e.g. I spent years figuring this out the hard way and didn't want others to do the same"},
+      {label:"The thing that makes my approach different is ___",hint:"Not a feature — a philosophy. What do you do that most people in your space don't?",key:"v1p2",ph:"e.g. I actually build things with you instead of just telling you what to do"}
+    ],
+    compile:v=>`I help ${v.v1p0||'___'}. I got into this because ${v.v1p1||'___'}. What makes my approach different is ${v.v1p2||'___'}.`
+  },
+  {
+    title:"Epiphany #1 — Challenge a Belief",
+    note:"What does your industry get wrong? This is where you plant your flag. You're not trying to be controversial — you're trying to be honest about something most people won't say.",
+    prompts:[
+      {label:"Most people in [your space] believe ___",hint:"The conventional wisdom — the thing everyone says that you've seen fail.",key:"v2p0",ph:"e.g. most coaches believe you need a huge audience before you can charge premium rates"},
+      {label:"But here's what I've actually seen happen ___",hint:"A real example — something you've witnessed that contradicts the conventional wisdom.",key:"v2p1",ph:"e.g. I've watched people with 200 followers close $5k clients by being specific"},
+      {label:"The shift that changes everything is ___",hint:"Your reframe. The new belief you're offering instead.",key:"v2p2",ph:"e.g. stop trying to reach everyone and start deeply resonating with 10 specific people"}
+    ],
+    compile:v=>`Most people in my space believe ${v.v2p0||'___'}. But here's what I've actually seen: ${v.v2p1||'___'}. The shift that changes everything is ${v.v2p2||'___'}.`
+  },
+  {
+    title:"Mini Teaching Video",
+    note:"Teach one thing. Make it the most useful 60 seconds you can share. One idea, fully explained — not a tip list.",
+    prompts:[
+      {label:"The one thing I wish every [your audience] knew is ___",hint:"One single insight that would genuinely change how they see something — not a list.",key:"v3p0",ph:"e.g. the one thing I wish every new entrepreneur knew is that your first offer doesn't have to be perfect"},
+      {label:"Here's the simplest way to explain it ___",hint:"Pretend you're explaining it to someone smart who knows nothing about your industry.",key:"v3p1",ph:"e.g. think of your first offer like a first date — it's about connection, not commitment"},
+      {label:"When someone actually applies this, what usually happens is ___",hint:"The result. What changes for someone who gets this?",key:"v3p2",ph:"e.g. they stop waiting and start having real conversations — and those conversations become clients"}
+    ],
+    compile:v=>`${v.v3p0||'___'}. Here's the simplest way to think about it: ${v.v3p1||'___'}. When people apply this, ${v.v3p2||'___'}.`
+  },
+  {
+    title:"Epiphany #2 — More Personal",
+    note:"A mistake you used to make in your own work — and the lesson you learned the hard way. The more specific and honest this is, the more it resonates.",
+    prompts:[
+      {label:"I used to [common mistake] until ___",hint:"Something you genuinely did wrong — the more specific the better.",key:"v4p0",ph:"e.g. I used to build every client a complicated funnel until I realized most just needed someone to talk to"},
+      {label:"What I realized was ___",hint:"The lesson. Say it plainly.",key:"v4p1",ph:"e.g. simplicity converts better than sophistication almost every single time"},
+      {label:"Now when I work with someone I always start with ___",hint:"What changed in your practice because of this lesson?",key:"v4p2",ph:"e.g. one honest conversation about what they're actually afraid of"}
+    ],
+    compile:v=>`I used to ${v.v4p0||'___'}. What I realized was ${v.v4p1||'___'}. Now when I work with someone, I always start with ${v.v4p2||'___'}.`
+  },
+  {
+    title:"About My Process",
+    note:"Walk people through what it actually feels like to work with you — without pitching. Show the transformation without selling it.",
+    prompts:[
+      {label:"When someone comes to me they're usually dealing with ___",hint:"Their emotional reality — not a problem statement, but how they're actually feeling.",key:"v5p0",ph:"e.g. a business that's working but not growing, and they can't figure out why"},
+      {label:"The first thing we do together is ___",hint:"Your actual first step — what happens in the first conversation or first week?",key:"v5p1",ph:"e.g. we strip everything back and figure out what's actually worth keeping"},
+      {label:"By the end they typically ___",hint:"The transformation — what's different for them on the other side?",key:"v5p2",ph:"e.g. have more clarity and momentum in a week than they had in the previous six months"}
+    ],
+    compile:v=>`When someone comes to me they're usually dealing with ${v.v5p0||'___'}. The first thing we do is ${v.v5p1||'___'}. By the end they typically ${v.v5p2||'___'}.`
+  },
+  {
+    title:"What I Learned + What's Next",
+    note:"Reflect on the challenge and offer a soft, honest invitation to the right person. This isn't a pitch — it's an open door.",
+    prompts:[
+      {label:"I started this challenge wanting to prove ___",hint:"What was your original intention?",key:"v6p0",ph:"e.g. that you don't need a production team to build a real audience"},
+      {label:"What I actually discovered was ___",hint:"What surprised you? What shifted?",key:"v6p1",ph:"e.g. that showing up imperfectly is more effective than waiting to be polished"},
+      {label:"If you're a [your audience] dealing with [their problem], here's my invitation ___",hint:"Your softest CTA — not a pitch, just an open door for the right person.",key:"v6p2",ph:"e.g. if you're a coach who's been hiding, DM me the word START and let's talk"}
+    ],
+    compile:v=>`I started this challenge wanting to prove ${v.v6p0||'___'}. What I actually discovered was ${v.v6p1||'___'}. ${v.v6p2||'___'}.`
+  }
+];
+
+function getVideos(){ return state.level===1 ? level1Videos : level2Videos; }
+
+// ── VIDEO JOURNAL — TWO PHASE ─────────────────────────
+// Phase A: prompts screen (screen-7)
+// Phase B: generated editable script (screen-script)
+
+function startVideos() {
+  currentVideoIndex = 0;
+  buildVideoDots('video-dots');
+  buildVideoDots('script-dots');
+  renderVideoPrompts(0);
+  showScreen('screen-7');
+  // sync currentIndex to screen-7 position
+  currentIndex = screenOrder.indexOf('screen-7');
+}
+
+function buildVideoDots(containerId) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = document.createElement('div');
+    d.className = 'vdot' + (i === 0 ? ' active' : '');
+    d.id = containerId + '-dot-' + i;
+    wrap.appendChild(d);
+  }
+}
+
+function updateDots(idx) {
+  ['video-dots','script-dots'].forEach(cid => {
+    for (let i = 0; i < 7; i++) {
+      const d = document.getElementById(cid + '-dot-' + i);
+      if (!d) continue;
+      d.className = 'vdot' + (i < idx ? ' done' : i === idx ? ' active' : '');
+    }
+  });
+  document.getElementById('video-eyebrow').textContent = `Video ${idx+1} of 7 — Journal Prompts`;
+  document.getElementById('script-eyebrow').textContent = `Video ${idx+1} of 7 — Your Script`;
+}
+
+// ── PHASE A: PROMPTS ──────────────────────────────────
+function renderVideoPrompts(idx) {
+  currentVideoIndex = idx;
+  updateDots(idx);
+  const videos = getVideos();
+  const v = videos[idx];
+  const container = document.getElementById('video-journal-content');
+
+  container.classList.add('slide-out');
+  setTimeout(() => {
+    container.classList.remove('slide-out');
+    container.innerHTML = '';
+    _buildPromptsContent(container, v, idx);
+    container.classList.add('slide-in');
+    setTimeout(() => container.classList.remove('slide-in'), 300);
+  }, 220);
+}
+
+function _buildPromptsContent(container, v, idx) {
+  const card = document.createElement('div');
+  card.className = 'journal-card';
+
+  let promptsHTML = '';
+  if (v.prebuilt) {
+    // show the pre-written script right on the prompts screen
+    const prebuiltScript = v.script();
+    promptsHTML = `
+      <div class="info-box" style="margin-bottom:16px;">
+        ✅ This one is already written for you — no prompts needed.
+      </div>
+      <div class="script-box">
+        <div class="script-label">Your Script — Ready to Go</div>
+        <div class="script-text">"${prebuiltScript}"</div>
+      </div>`;
+  } else {
+    promptsHTML = v.prompts.map(p => `
+      <div class="input-group">
+        <label class="input-label">${p.label}</label>
+        <span class="input-hint">${p.hint}</span>
+        <textarea class="text-input" rows="2" placeholder="${p.ph}"
+          oninput="state.videos['${p.key}']=this.value">${state.videos[p.key] || ''}</textarea>
+      </div>`).join('');
+  }
+
+  card.innerHTML = `
+    <div class="journal-header">
+      <div class="video-badge">VIDEO ${idx+1}</div>
+      <div class="video-title-text">${v.title}</div>
+    </div>
+    <div class="video-note">${v.note}</div>
+    ${promptsHTML}
+  `;
+  container.appendChild(card);
+
+  // Generate Script button
+  const btnWrap = document.createElement('div');
+  btnWrap.className = 'btn-row';
+  btnWrap.style.cssText = 'flex-direction:column;align-items:flex-start;';
+
+  const genBtn = document.createElement('button');
+  genBtn.className = 'btn-primary';
+  genBtn.style.fontSize = '20px';
+  genBtn.textContent = v.prebuilt ? '✨ Edit & Personalize This Script' : '✨ Generate My Script';
+  genBtn.onclick = () => showScriptView(idx);
+  btnWrap.appendChild(genBtn);
+
+  const skipGenBtn = document.createElement('button');
+  skipGenBtn.className = 'btn-skip';
+  skipGenBtn.style.cssText = 'font-size:16px;margin-top:4px;';
+  skipGenBtn.textContent = idx < 6 ? 'Skip for now — next video →' : 'Skip — see my full plan →';
+  skipGenBtn.onclick = () => afterFilmed(idx);
+  btnWrap.appendChild(skipGenBtn);
+
+  if (idx > 0) {
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn-back';
+    backBtn.style.marginTop = '10px';
+    backBtn.textContent = '← Previous Video';
+    backBtn.onclick = () => {
+      showScreen('screen-7');
+      currentIndex = screenOrder.indexOf('screen-7');
+      renderVideoPrompts(idx - 1);
+      window.scrollTo(0, 0);
+    };
+    btnWrap.appendChild(backBtn);
+  }
+
+  // Skip to end — always shown
+  const skipEnd = document.createElement('button');
+  skipEnd.className = 'btn-skip';
+  skipEnd.style.cssText = 'font-size:14px;margin-top:14px;color:#4a6a80;';
+  skipEnd.textContent = 'Skip to the end — see my plan';
+  skipEnd.onclick = () => skipToEnd();
+  btnWrap.appendChild(skipEnd);
+
+  container.appendChild(btnWrap);
+}
+
+// ── PHASE B: GENERATED SCRIPT ─────────────────────────
+function showScriptView(idx) {
+  const videos = getVideos();
+  const v = videos[idx];
+
+  // compile the script
+  let compiled = '';
+  if (v.prebuilt) {
+    compiled = v.script();
+  } else if (v.compile) {
+    compiled = v.compile(state.videos);
+  }
+
+  // store the edited script (keyed so edits persist per video)
+  const editKey = 'script_v' + idx;
+  // only set default if not already edited
+  if (!state.videos[editKey]) {
+    state.videos[editKey] = compiled;
+  }
+
+  // populate the script screen
+  document.getElementById('sv-badge').textContent = 'VIDEO ' + (idx + 1);
+  document.getElementById('sv-title').textContent = v.title;
+
+  const editor = document.getElementById('script-editor');
+  editor.value = state.videos[editKey];
+  editor.oninput = () => { state.videos[editKey] = editor.value; };
+
+  // wire up I Filmed It / Done Editing
+  const filmedBtn = document.getElementById('btn-filmed-main');
+  const skipBtn = document.getElementById('btn-filmed-skip');
+
+  if (editingFromPlan) {
+    filmedBtn.textContent = '✅ Done Editing → Back to My Plan';
+    filmedBtn.onclick = () => {
+      editingFromPlan = false;
+      // refresh the script text in the plan row if it's already rendered
+      const el = document.getElementById('plan-script-text-' + idx);
+      if (el) el.textContent = '"' + (state.videos['script_v'+idx] || '') + '"';
+      buildPlan();
+      showScreen('plan-screen');
+      currentIndex = screenOrder.indexOf('plan-screen');
+      window.scrollTo(0, 0);
+    };
+    skipBtn.textContent = '← Back to Plan without saving';
+    skipBtn.onclick = () => {
+      editingFromPlan = false;
+      showScreen('plan-screen');
+      currentIndex = screenOrder.indexOf('plan-screen');
+      window.scrollTo(0, 0);
+    };
+  } else {
+    filmedBtn.textContent = idx < 6 ? '✅ I Filmed It! → Next Video' : '✅ I Filmed It! → See My Full Plan';
+    filmedBtn.onclick = () => afterFilmed(idx);
+    skipBtn.textContent = idx < 6 ? 'Skip this one for now → Next Video' : 'Skip → See My Full Plan';
+    skipBtn.onclick = () => afterFilmed(idx);
+  }
+
+  showScreen('screen-script');
+  currentIndex = screenOrder.indexOf('screen-script');
+  updateDots(idx);
+  window.scrollTo(0, 0);
+}
+
+function afterFilmed(idx) {
+  if (idx < 6) {
+    showScreen('screen-7');
+    currentIndex = screenOrder.indexOf('screen-7');
+    renderVideoPrompts(idx + 1);
+    window.scrollTo(0, 0);
+  } else {
+    buildPlan();
+    showScreen('plan-screen');
+    currentIndex = screenOrder.indexOf('plan-screen');
+    window.scrollTo(0, 0);
+  }
+}
+
+function skipToEnd() {
+  buildPlan();
+  showScreen('plan-screen');
+  currentIndex = screenOrder.indexOf('plan-screen');
+  window.scrollTo(0, 0);
+}
+
+function editScript(idx) {
+  editingFromPlan = true;
+  currentVideoIndex = idx;
+  updateDots(idx);
+  showScriptView(idx);
+}
+
+function runItAgain() {
+  // Level 1 completers graduate to Level 2
+  if (state.level === 1) {
+    state.level = 2;
+    // update the badge while we're at it
+    const badge = document.getElementById('plan-level-badge');
+    if (badge) badge.textContent = '🔥 LEVEL 2 — THE EXPERT SERIES';
+  }
+  // Wipe only video answers, keep name/goal/minigoal
+  state.videos = {};
+  currentVideoIndex = 0;
+  buildVideoDots('video-dots');
+  buildVideoDots('script-dots');
+  renderVideoPrompts(0);
+  showScreen('screen-7');
+  currentIndex = screenOrder.indexOf('screen-7');
+  window.scrollTo(0, 0);
+}
+
+function goBackToPrompts() {
+  showScreen('screen-7');
+  currentIndex = screenOrder.indexOf('screen-7');
+  renderVideoPrompts(currentVideoIndex);
+  window.scrollTo(0, 0);
+}
+
+// ── CHECKLIST ─────────────────────────────────────────
+function toggleCheck(el){
+  el.classList.toggle('checked');
+  el.querySelector('.check-box').textContent=el.classList.contains('checked')?'✓':'';
+}
+
+// ── PLAN BUILDER ──────────────────────────────────────
+function buildPlan(){
+  const name=state.name||'You';
+  const miniText=miniGoalMap[state.minigoal]||state.minigoalText||'complete this challenge';
+  const videos=getVideos();
+
+  document.getElementById('plan-name-head').textContent=name+"'s";
+  document.getElementById('plan-level-badge').textContent=
+    state.level===1?'⭐ LEVEL 1 — THE PERSON SERIES':'🔥 LEVEL 2 — THE EXPERT SERIES';
+
+  const output=document.getElementById('plan-output');
+  output.innerHTML='';
+
+  // commitment section
+  const cs=document.createElement('div');
+  cs.className='plan-section ps-commit';
+  cs.innerHTML=`
+    <div class="ps-label">Your Commitment</div>
+    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:20px;color:var(--cream);line-height:1.8;">
+      By the end of this challenge I will
+      <strong style="color:var(--teal);font-style:normal;">${miniText}</strong>,
+      even if it's messy, even if nobody watches, and even if I have to do it scared.
+    </div>`;
+  output.appendChild(cs);
+
+  // videos section with collapsible scripts
+  const vs=document.createElement('div');
+  vs.className='plan-section ps-videos';
+  let html='<div class="ps-label">Your 7 Scripts</div>';
+
+  videos.forEach((v,i)=>{
+    // prefer the user's edited version, fall back to compile
+    let script = state.videos['script_v'+i] || '';
+    if (!script) {
+      if(v.prebuilt){ script = v.script(); }
+      else if(v.compile){ script = v.compile(state.videos); }
+    }
+    html+=`
+      <div class="plan-video-row" id="pvrow-${i}">
+        <div class="plan-row-header">
+          <div class="plan-vnum">0${i+1}</div>
+          <div class="plan-vname">${v.title}</div>
+          <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+            <span class="plan-edit-link" onclick="editScript(${i})">edit</span>
+            <button class="plan-view-btn" onclick="togglePlanRow(${i})">View <span class="arrow" id="arrow-${i}">▼</span></button>
+          </div>
+        </div>
+        <div class="plan-vscript-wrap">
+          <div class="plan-vscript" id="plan-script-text-${i}">"${script}"</div>
+        </div>
+      </div>`;
+  });
+
+  vs.innerHTML=html;
+  output.appendChild(vs);
+
+  // mission card — level-aware
+  if (state.level === 1) {
+    document.getElementById('mission-title').textContent = 'YOU SHOWED UP. NOW LEVEL UP.';
+    document.getElementById('mission-cta').innerHTML = `
+      You just proved you can do this. The hardest part — starting — is behind you.<br><br>
+      <strong style="color:var(--cream)">Your next move:</strong> Run the challenge again as Level 2 — The Expert Series. 
+      Same simple format, but now your videos are about your business, your expertise, and the people you want to reach. 
+      You've got the camera reps. Now it's time to put them to work.<br><br>
+      <button onclick="runItAgain()" style="background:var(--teal);color:#0f172a;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;padding:13px 34px;border:none;border-radius:8px;cursor:pointer;margin-top:8px;">
+        Start Level 2 — Skip the Setup →
+      </button>
+    `;
+  } else {
+    document.getElementById('mission-title').textContent = 'SEVEN VIDEOS. REAL RESULTS.';
+    document.getElementById('mission-cta').innerHTML = `
+      You've done something most business owners never do — you showed up, said something real, and put it out there.<br><br>
+      <strong style="color:var(--cream)">Your next move:</strong> Get one-on-one support from David. 
+      Bring your videos, your questions, and your goals — and let's figure out exactly what to build next to turn 
+      this momentum into actual clients and growth.<br><br>
+      <a href="https://coloradomastermind.com/#buildwithbee" target="_blank" 
+        style="display:inline-block;background:var(--teal);color:#0f172a;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;padding:13px 34px;border-radius:8px;text-decoration:none;margin-top:8px;">
+        Get 1-on-1 Support with David →
+      </a>
+    `;
+  }
+}
+
+function togglePlanRow(i){
+  const row=document.getElementById('pvrow-'+i);
+  row.classList.toggle('open');
+  const arrow=document.getElementById('arrow-'+i);
+  if(arrow) arrow.style.transform = row.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+// ── RESTART ───────────────────────────────────────────
+function restartWizard(){
+  Object.keys(state).forEach(k=>state[k]=k==='videos'?{}:null);
+  state.name='';state.minigoalText='';
+  screenOrder=['screen-0','screen-1'];
+  currentIndex=0;currentVideoIndex=0;transitioning=false;
+  document.getElementById('commitment-fill').textContent='—';
+  document.getElementById('user-name').value='';
+  document.getElementById('script-editor').value='';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','anim-in','anim-out'));
+  document.getElementById('screen-0').classList.add('active');
+  updateProgress('screen-0');
+  window.scrollTo(0,0);
+}
+
+// ── INIT ──────────────────────────────────────────────
+updateProgress('screen-0');
+</script>
+</body>
+</html>
