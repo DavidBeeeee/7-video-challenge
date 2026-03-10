@@ -1351,6 +1351,35 @@ body::before {
   </div>
 </div>
 
+<!-- ══ API KEY SCREEN ══ -->
+<div class="screen" id="screen-api-key">
+  <div class="eyebrow">AI Script Engine</div>
+  <h2 class="screen-title">Activate <span class="accent">AI Scripts</span></h2>
+  <p class="screen-sub">Enter your DeepSeek API key and every script gets crafted by an AI that's been trained on the exact psychological blueprint for your 7-video arc — voice-matched to you, not a template.</p>
+  <div class="input-group" style="margin-top:24px;">
+    <label class="input-label">DeepSeek API Key</label>
+    <span class="input-hint">Your key stays in your browser only — it's never sent to any server other than DeepSeek directly.</span>
+    <div style="position:relative;">
+      <input type="password" class="text-input" id="api-key-input" placeholder="sk-..."
+        style="font-family:monospace;letter-spacing:0.05em;padding-right:80px;"
+        oninput="state.apiKey=this.value.trim()">
+      <button type="button" onclick="toggleApiKeyVisibility()"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 8px;white-space:nowrap;">
+        Show
+      </button>
+    </div>
+  </div>
+  <div id="api-key-error" style="color:#ef4444;font-size:14px;margin-top:8px;display:none;padding:10px 14px;background:rgba(239,68,68,.08);border-radius:8px;border:1px solid rgba(239,68,68,.2);"></div>
+  <div class="btn-row" style="margin-top:24px;flex-direction:column;align-items:stretch;gap:10px;">
+    <button class="btn-primary" onclick="saveApiKeyAndContinue()">✨ Save Key &amp; Generate AI Scripts →</button>
+    <button class="btn-skip" onclick="skipApiKey()">Skip — use template scripts instead</button>
+    <button class="btn-back" onclick="goBack()">← Back</button>
+  </div>
+  <div style="margin-top:20px;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid var(--border);">
+    <p style="font-size:13px;color:var(--text-muted);margin:0;line-height:1.6;">No DeepSeek key yet? <a href="https://platform.deepseek.com" target="_blank" rel="noopener" style="color:var(--accent);">Get one free at platform.deepseek.com →</a><br>DeepSeek is extremely affordable — most users generate all 7 scripts for less than $0.05.</p>
+  </div>
+</div>
+
 <!-- ══ MVO Q2 — Script 1 mini-wizard ══ -->
 <div class="screen" id="screen-mvo2">
   <div class="q1-progress" id="mvo2-label">Getting Your Script Ready — Question 1 of 3</div>
@@ -1452,6 +1481,13 @@ body::before {
     <span class="loading-label">Building your script...</span>
   </div>
   <p class="epiphany-line visible" id="script-loading-msg" style="text-align:center;margin-top:32px;padding:0 16px;"></p>
+  <div id="script-error-section" style="display:none;text-align:center;margin-top:32px;padding:0 24px;">
+    <p id="script-error-msg" style="color:#f87171;font-size:16px;margin-bottom:24px;line-height:1.5;"></p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button id="script-error-retry" class="btn-primary" style="font-size:16px;">↺ Try Again</button>
+      <button id="script-error-fallback" class="btn-secondary" style="font-size:16px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);">Use Template Instead</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══ SCRIPT VIEW SCREEN ══ -->
@@ -1557,7 +1593,8 @@ const state = {
   posted:null, blocker:null, history:null, business:null,
   goal:null, minigoal:null, minigoalText:'', name:'',
   level:null, videos:{}, videoStatus:{},
-  mvoQ2:null, mvoQ3:null, mvoQ4:null
+  mvoQ2:null, mvoQ3:null, mvoQ4:null,
+  apiKey: localStorage.getItem('7vc_api_key') || ''
 };
 
 let screenOrder = ['screen-0','screen-1'];
@@ -1599,8 +1636,8 @@ function goNext() {
 
   if (cur === 'screen-1') {
     screenOrder = state.posted === 'no'
-      ? ['screen-0','screen-1','screen-2a','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen']
-      : ['screen-0','screen-1','screen-2b','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen'];
+      ? ['screen-0','screen-1','screen-2a','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-api-key','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen']
+      : ['screen-0','screen-1','screen-2b','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-api-key','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen'];
   }
 
   if (cur === 'screen-3') {
@@ -1624,6 +1661,7 @@ function goNext() {
   if (nextId === 'screen-mvo2') renderMvoScreen(2);
   else if (nextId === 'screen-mvo3') renderMvoScreen(3);
   else if (nextId === 'screen-mvo4') renderMvoScreen(4);
+  else if (nextId === 'screen-api-key') renderAPIKeyScreen();
   else if (nextId === 'screen-comm-layers') renderPrefaceV1();
   else if (nextId === 'screen-7') {
     currentVideoIndex = 0;
@@ -1637,6 +1675,91 @@ function goNext() {
 
 function goBack() {
   if (currentIndex > 0) { currentIndex--; showScreen(screenOrder[currentIndex], 'back'); }
+}
+
+// ── API KEY SCREEN ────────────────────────────────────
+function renderAPIKeyScreen() {
+  const input = document.getElementById('api-key-input');
+  if (!input) return;
+  const saved = state.apiKey || localStorage.getItem('7vc_api_key') || '';
+  input.value = saved;
+  state.apiKey = saved;
+  const errEl = document.getElementById('api-key-error');
+  if (errEl) errEl.style.display = 'none';
+}
+
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('api-key-input');
+  const btn = input ? input.parentElement.querySelector('button') : null;
+  if (!input) return;
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  if (btn) btn.textContent = isHidden ? 'Hide' : 'Show';
+}
+
+async function saveApiKeyAndContinue() {
+  const input = document.getElementById('api-key-input');
+  const key = (input ? input.value.trim() : '') || state.apiKey;
+  const errEl = document.getElementById('api-key-error');
+  const saveBtn = document.querySelector('#screen-api-key .btn-primary');
+
+  if (!key || !key.startsWith('sk-')) {
+    if (errEl) { errEl.textContent = 'Please enter a valid API key (it should start with sk-).'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  // Test the key with a minimal API call before proceeding
+  if (saveBtn) { saveBtn.textContent = 'Testing connection...'; saveBtn.disabled = true; }
+  if (errEl) errEl.style.display = 'none';
+
+  try {
+    const testResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: 'Reply with the single word: OK' }],
+        max_tokens: 5
+      })
+    });
+
+    if (!testResponse.ok) {
+      const errData = await testResponse.json().catch(() => ({}));
+      const msg = errData.error && errData.error.message ? errData.error.message : 'HTTP ' + testResponse.status;
+      throw new Error(msg);
+    }
+
+    // Key is valid — save and proceed
+    state.apiKey = key;
+    localStorage.setItem('7vc_api_key', key);
+    if (saveBtn) { saveBtn.textContent = '✅ Connected! Loading...'; }
+    setTimeout(() => {
+      if (saveBtn) { saveBtn.textContent = '✨ Save Key & Generate AI Scripts →'; saveBtn.disabled = false; }
+      currentIndex++;
+      if (currentIndex >= screenOrder.length) currentIndex = screenOrder.length - 1;
+      const nextId = screenOrder[currentIndex];
+      if (nextId === 'screen-comm-layers') renderPrefaceV1();
+      showScreen(nextId);
+    }, 800);
+
+  } catch(err) {
+    if (saveBtn) { saveBtn.textContent = '✨ Save Key & Generate AI Scripts →'; saveBtn.disabled = false; }
+    const errText = err && err.message ? err.message : String(err);
+    const isCors = errText.toLowerCase().includes('fetch') || errText.toLowerCase().includes('network') || errText.toLowerCase().includes('failed');
+    const displayMsg = isCors
+      ? 'Could not reach DeepSeek API. If you\'re opening this file directly from your computer, try serving it through a local server (e.g. VS Code Live Server, or drag into a browser tab from a server). Error: ' + errText
+      : 'API key error: ' + errText;
+    if (errEl) { errEl.textContent = displayMsg; errEl.style.display = 'block'; }
+  }
+}
+
+function skipApiKey() {
+  state.apiKey = '';
+  currentIndex++;
+  if (currentIndex >= screenOrder.length) currentIndex = screenOrder.length - 1;
+  const nextId = screenOrder[currentIndex];
+  if (nextId === 'screen-comm-layers') renderPrefaceV1();
+  showScreen(nextId);
 }
 
 function goToRecapWithNameCheck() {
@@ -1823,6 +1946,406 @@ function populateRecap() {
   }
 }
 
+// ── API SCRIPT ENGINE ────────────────────────────────
+const SYSTEM_PROMPT = `You are the Script Engine for the 7 Video Challenge by Build With Bee. Your job is to take a real person's journal prompt answers and transform them into a 90-second talking-head video script (~220-270 words) that makes them sound like the most compelling, authentic version of themselves.
+
+You are not a copywriter. You are not a content coach. You are a storytelling architect who understands human psychology, narrative structure, and the specific emotional job each video performs in a 7-video arc. You write scripts that make the speaker think "I didn't know I had that in me" and make the audience think "I need to hear more from this person."
+
+<core_rules>
+- Write in the speaker's voice, not yours. Mirror their vocabulary, sentence length, emotional register, and communication style based on their journal answers. If they write casually, the script is casual. If they write with precision, the script is precise. Never make them sound like a marketer.
+- Never use phrases like "in this video," "welcome back," "hey guys," "let me share," "I wanted to talk about," or any language that signals "content creator." These people are NOT content creators yet. They're people talking to a camera.
+- Never include calls to action like "follow me," "like and subscribe," "comment below," or "link in bio." The only exception is Video 7 Level 2, which has a natural, soft invitation — and even that should feel like a conversation, not a CTA.
+- Never use hashtags, emojis, or social media formatting in scripts.
+- Scripts should sound like someone TALKING, not someone READING. Use contractions. Use sentence fragments. Use the rhythm of speech, not the rhythm of writing. Include natural hesitation markers like "honestly," "look," "the thing is," "I don't know how to say this but" — sparingly and authentically.
+- Every script must be deliverable in approximately 90 seconds when read at a natural speaking pace. Target 220-270 words. Slightly shorter is better than slightly longer.
+- The speaker should never sound like they have it all figured out. Even in the Epiphany videos (3 and 5), the insight should feel discovered, not preached. Earned, not performed.
+- Never manufacture emotion the speaker didn't express. If their journal answers are understated, the script should be understated. Amplify what's there. Don't invent what isn't.
+</core_rules>
+
+<cumulative_context_rule>
+CRITICAL: When generating a script for any video after Video 1, you will receive ALL previous journal prompt answers alongside the current video's answers. Use this cumulative context to:
+- Reference themes, phrases, or ideas from earlier videos when it strengthens the current script
+- Ensure the emotional arc feels like a JOURNEY, not seven disconnected posts
+- Avoid repeating the same stories, phrases, or insights across videos
+- Build on what came before — if Video 2 mentioned a specific detail about their background, Video 4's check-in might naturally reference how that detail connects to what they're experiencing now
+- Make Video 7's reflection feel earned by echoing the specific language and themes from Video 1
+</cumulative_context_rule>
+
+<level_context>
+There are two levels:
+
+LEVEL 1 — THE PERSON SERIES: For people who have never posted (or barely posted). They may not have a business. This series is about finding their voice, getting comfortable, and discovering they're worth listening to. The audience is anyone who relates to their humanity. The scripts should feel personal, vulnerable, and real.
+
+LEVEL 2 — THE EXPERT SERIES: For people with knowledge, skills, or experience who are stepping into visibility. IMPORTANT: Level 2 users may NOT have a defined business, product, or service. They range from "I have expertise and I'm thinking about building something" to "I have an established practice." The scripts must work across this entire spectrum. Never assume they have clients, an offer, or revenue. Assume they have KNOWLEDGE and PASSION. The audience is anyone who could benefit from what this person knows.
+</level_context>
+
+<voice_calibration>
+Before writing any script, silently analyze the speaker's journal answers for:
+- Vocabulary complexity (simple/conversational vs. sophisticated/precise)
+- Emotional range (understated/dry vs. expressive/passionate)
+- Humor presence (if they're funny in their answers, the script should let that show)
+- Sentence rhythm (short punchy thoughts vs. longer flowing ideas)
+- Formality level (casual/colloquial vs. measured/professional)
+- Confidence level (tentative/questioning vs. assured/direct)
+
+Then write the script in THEIR voice, calibrated to these signals. The script should feel like the best version of how they actually talk — not a different person.
+</voice_calibration>
+
+<the_7_video_journey>
+The audience subconsciously experiences across the 7 videos:
+Curiosity → Identification → Insight → Trust → Authority → Alignment → Loyalty
+
+The speaker experiences:
+Terror → Vulnerability → Discovery → Confidence → Conviction → Clarity → Ownership
+
+Each video's emotional energy should be distinctly different from the one before it. The journey is felt through tonal shifts, not stated.
+</the_7_video_journey>
+
+<video_1_blueprint>
+VIDEO 1 — STILL IN THE ORDINARY WORLD
+"I'm doing this thing and honestly I'm a little embarrassed about it."
+Framework: Modified Hero's Journey
+Prompt type: Prefilled from onboarding (editable)
+Audience feels: Curiosity + Recognition
+Speaker feels: Nervous but committed
+
+STRUCTURAL BEATS:
+1. Audience Signal (Hook) — Open mid-thought with something that mirrors the universal experience of wanting to start something and not starting. Not content-specific — life-specific. The viewer should feel recognized before the speaker even introduces themselves.
+2. Trust Layer (Identity) — Name, one grounding detail, personality through HOW they talk. Not a bio — a vibe. The audience decides "do I trust this person" in 3 seconds.
+3. Empathy Lock / Mirror Moment — The specific flavor of WHY they haven't been doing this, based on their blocker. Camera fear is a different mirror than "I don't know what to say" which is different than "I keep starting over." Specificity creates the "wait, are you me?" moment.
+4. Open Loop (Start Declaration) — They're doing this challenge. They don't know what's going to happen. No promise of transformation. Just forward motion + uncertainty. That incompleteness is what makes people follow.
+
+TONE: Voice memo to a friend. Slightly self-deprecating. Starts mid-thought. Acknowledges the embarrassment. Ends without resolution.
+
+LEVEL 1 SPECIFIC: Regular human doing something outside their comfort zone. No expertise. No credentials. The challenge gets sold through honest, slightly nervous commitment.
+
+LEVEL 2 SPECIFIC: Someone with expertise stepping into visibility. Quiet confidence underneath nervousness. They KNOW they're good at something — they just haven't figured out this part yet. The embarrassment is flavored differently: "I've been the person giving advice, not making videos about it."
+
+DATA AVAILABLE: name, blocker/history, business stage, primary goal, mini-goal, commitment statement.
+</video_1_blueprint>
+
+<video_2_blueprint>
+VIDEO 2 — INTRODUCING THE HERO
+"Here's who I actually am."
+Framework: Modified Hero's Journey
+Audience feels: Identification + Warmth
+Speaker feels: Seen
+
+STRUCTURAL BEATS:
+1. Catalyst Moment (Hook) — Open with something that makes the viewer curious about this person specifically. Lead with one surprising or unexpected detail that doesn't quite make sense yet. The audience leans in because they want context.
+2. Vulnerability Entry (The Internal World) — Something real about who they are. Not trauma-dumping — but a piece of their story that most people wouldn't guess. The audience is building a mental picture beyond surface level.
+3. Enemy Identification (The False Version) — There's a version of this person the world sees that isn't the full picture. The gap between perceived self and real self. The audience wants to see the real one.
+4. Agency Reclaim / Path Clarity — The speaker connects who they are to why they're here. Not mission-statement energy. "This is what I care about and I think it's worth talking about."
+
+TONE: Warm, relaxed, storytelling energy. Like the second conversation with someone. Specific details, not generalities. A moment of surprise. Settling-in energy.
+
+LEVEL 1 SPECIFIC: "About Me" — make the audience feel like they just met someone interesting at a party. Not impressive — interesting. Revealing a human being, not building a brand.
+
+LEVEL 2 SPECIFIC: "About My Expertise" — the origin story of how they became someone who knows this stuff. Not a business pitch — the JOURNEY that created their knowledge. Works whether they have an LLC or just 15 years of experience.
+
+PROMPTS (L1): 1) Where from + one shaping detail, 2) Something surprising about them, 3) What they care about and why it's worth talking about
+PROMPTS (L2): 1) Real story of how they got into this, 2) What most people get wrong in their space, 3) Why this matters personally
+</video_2_blueprint>
+
+<video_3_blueprint>
+VIDEO 3 — EPIPHANY #1 — LEAVING THE ORDINARY WORLD
+The first E. The crown jewel. The one that gets shared.
+Framework: 5E EPIPHANY (7 beats) — NOT Hero's Journey
+Audience feels: Insight + "I never thought of it that way"
+Speaker feels: Brave
+
+THIS IS THE MOST IMPORTANT VIDEO IN THE CHALLENGE. It must create a genuine cognitive shift in the viewer — not teach them something new, but restructure how they see something they already knew. The trigger is "Whoa, I never thought of it like that before." This is what sells the full 5E framework.
+
+THE 7 EPIPHANY BEATS — ALL MUST BE PRESENT:
+1. Pattern Break (Hook) — The opening disrupts default thinking. A statement that creates cognitive friction. Frames a familiar experience in an unfamiliar way. The viewer's brain goes "wait, what?" Describe something mundane and immediately reveal a hidden structure underneath it.
+2. Discovery Arc (Story) — Don't jump to the insight. Walk the viewer through HOW the speaker arrived at it. If you state the reframe, people resist. If you take them on the journey, they arrive at it themselves. Storytelling as a vehicle for cognition.
+3. Cognitive Reframe (The Shift) — The old lens cracks, new one snaps into place. It lands as inevitability, not argument. The audience arrives at the reframe a split second before or right as the speaker says it.
+4. "Aha" Transfer — The viewer doesn't just learn — they receive a new intellectual tool they can USE. After this moment, they can see the pattern the speaker described and apply it. This makes the viewer feel intelligent and makes the speaker the source of that intelligence.
+5. Cost Revelation — What does it cost to NOT see it this way? Quiet, honest truth. Not a scare tactic. Briefly illuminate what staying in the old paradigm looks like.
+6. Simplicity Signal — The reframe, once revealed, feels simple. Almost obvious. "Why didn't I see this before?" The core reframe should be statable in one sentence.
+7. Authority Anchor — The viewer unconsciously associates the speaker with insight. Not claimed — experienced. "If this person can make me see [X] differently in 90 seconds, what else do they see?"
+
+TONE: Gravity without heaviness. Present, considered. The old belief stated casually. Discovery arc is sensory and specific. Reframe delivered simply — short sentences, space to breathe. Cost revelation is compassionate. Simplicity signal is one sentence people screenshot. Feels like someone telling you something important at 1am.
+
+LEVEL 1 SPECIFIC: Personal epiphany — a belief about life, identity, fear, success, relationships. The more personal and specific, the more universal it feels.
+
+LEVEL 2 SPECIFIC: Professional/industry epiphany — something their field gets wrong. Calm authority mixed with genuine surprise. Conventional wisdom stated with respect, not straw-manned. ONE concrete story as evidence.
+
+PROMPTS (L1): 1) Old belief held for a long time, 2) The actual experience that cracked it, 3) New truth stated simply, 4) Cost of the old way, 5) Why this matters enough to say on camera
+PROMPTS (L2): 1) Conventional wisdom that's wrong/incomplete, 2) Story of when they saw the cracks, 3) What's actually true instead, 4) Cost to people who follow the old way, 5) Why this needs to be said
+</video_3_blueprint>
+
+<video_4_blueprint>
+VIDEO 4 — THE PROGRESS SIGNAL — ROAD OF TRIALS
+"I'm in the middle of this and here's what's actually happening."
+Framework: Modified Hero's Journey
+Audience feels: Trust + Credibility
+Speaker feels: Momentum
+
+STRUCTURAL BEATS:
+1. Momentum Validation (Hook) — Acknowledge where they are. Not a recap — an honest status report. Raw, mid-process honesty is magnetic.
+2. Behind-the-Curtain Access — What this has actually been like. Not highlight reel. The real texture.
+3. Small Win Proof — Something has shifted. Might be small and subtle. Name it. For L2, this might show competence in action.
+4. Real-Time Transparency — What's still hard. Name it. This is what separates authentic content from motivational fluff.
+5. Objection Pre-emption — By showing up mid-challenge with honest energy, they demonstrate consistency doesn't require constant excitement.
+6. Expert Ease (L2) — Expertise surfaces naturally through HOW they talk about their experience, not through explicit teaching.
+7. Social Evidence — End with forward motion. Any external validation surfaces as surprise, not bragging.
+
+TONE: Relaxed, reflective, slightly surprised. Feels like pressing record without a plan. Grounding statement to start. Uses contrast naturally. Small win is understated. Honesty about difficulty is specific. Ends with quiet forward motion.
+
+THIS VIDEO EARNS THE RIGHT FOR VIDEO 5. Without the road of trials, the second epiphany feels like another hot take. With it, it feels like a hard-won realization.
+
+PROMPTS (L1): 1) What surprised them, 2) One small shift, 3) What's still hard, 4) What they'd tell someone thinking about starting
+PROMPTS (L2): 1) What surprised them about communicating expertise, 2) One moment/result that showed traction, 3) What's still hard, 4) What they're understanding about audience/message/self
+</video_4_blueprint>
+
+<video_5_blueprint>
+VIDEO 5 — EPIPHANY #2 — FINDING THE ELIXIR
+The second E. Deeper. More convicted. Earned.
+Framework: 5E EPIPHANY (7 beats — ESCALATED) — NOT Hero's Journey
+Audience feels: Authority + Respect
+Speaker feels: Convicted
+
+Video 3 worked through COGNITIVE SURPRISE. Video 5 works through CONVICTION. The speaker isn't sharing an insight — they're planting a flag. A stranger with a hot take is noise. A person you've journeyed with who stands for something is a leader.
+
+THE 7 ESCALATED EPIPHANY BEATS:
+1. Pattern Break -> "Sacred Cow Slaughter" — Goes after something PROTECTED. A belief people defend. The audience feels a jolt.
+2. Discovery Arc -> "Logic Re-stack" — Not just a story — a dismantling. Walk through the logic of the old belief and show it falls apart. Through experience, not argument.
+3. Cognitive Reframe -> "Paradigm Break" — Upgraded. Video 3 shifted a lens. Video 5 breaks a paradigm. "I can never go back to seeing it the old way." Quiet certainty, not arrogance.
+4. "Aha" Transfer -> "Emotional Safety" — This epiphany is more threatening to the viewer's beliefs. Create a safe container. Not "you're wrong" but "I believed it too, and letting go was the best thing I ever did."
+5. Cost Revelation -> "Future Pacing" — Instead of just showing the cost, show what life looks like on the OTHER side. What opens up when you let go?
+6. Simplicity Signal -> "Status Shift" — The viewer feels smarter for seeing this. "I was asleep to this and now I'm awake."
+7. Authority Anchor -> "Natural Invitation" — Slightly more active than V3. The video ends making the right person think "I want more of this person's world."
+
+TONE: Convicted and steady. Not ranting, not defensive. Opens with sacred cow stated plainly. Logic re-stack through personal narrative. Paradigm break delivered as simple truth. Future pacing is warm. Unapologetic without being aggressive.
+
+LEVEL 1 SPECIFIC: Contrarian personal belief — something they hold that goes against the grain. Not controversy for attention — standing in a hard-won truth.
+
+LEVEL 2 SPECIFIC: Industry sacred cow — a myth that needs to die. The energy of someone done being polite about something important. Not angry — resolved.
+
+PROMPTS (L1): 1) Belief most would disagree with, 2) Experience that forced this belief, 3) Cost of the old way, 4) What opened up after letting go, 5) What they'd say to one specific person still stuck
+PROMPTS (L2): 1) Biggest myth in their field, 2) Their own journey from believer to heretic, 3) The actual truth nobody says, 4) What it costs people who follow the myth, 5) Who needs to hear this and what changes for them
+</video_5_blueprint>
+
+<video_6_blueprint>
+VIDEO 6 — THE ORDEAL — THE FINAL BATTLE
+"Here's what I'm still fighting. Here's the truth I've been avoiding."
+Framework: Modified Hero's Journey
+Audience feels: Deep trust + Connection
+Speaker feels: Exposed + Proud
+
+THIS IS NOT A POSITIONING VIDEO. THIS IS NOT ABOUT VALUES OR IDENTITY. This is the internal ordeal — the speaker faces the deepest thing they've been avoiding. The dragon in the cave. The audience witnesses the most courageous thing a person can do on camera: admit what's still unfinished inside them.
+
+STRUCTURAL BEATS:
+1. Identity Call-to-Arms (INVERTED) — Opens with honesty about what's still hard, not strength. The vulnerability IS the call-to-arms.
+2. The Internal Battle — The thing they're fighting. PRESENT TENSE. Not conquered. Not past. Something alive right now.
+3. Shared Values (through vulnerability) — By naming their struggle, they implicitly declare their values: honesty over performance, progress over perfection.
+4. The Admission — ONE specific thing they've been avoiding saying. Not general — SPECIFIC.
+5. Polarization (through authenticity) — The people who stay after this are the ride-or-die audience.
+6. Ethical Bridge — Quiet forward lean. Not resolution — continuation. "I don't have this solved, but I'm not stopping."
+
+TONE: Quiet. Slow. Words chosen carefully. Present tense throughout. No neat resolution. The honesty IS the point. Ends with forward motion despite vulnerability.
+
+LEVEL 1 SPECIFIC: The fear, doubt, or struggle that's been present the whole challenge. The voice that says nobody cares. The comparison trap. The fear nothing will change.
+
+LEVEL 2 SPECIFIC: The internal war of claiming expertise publicly. Imposter syndrome. The gap between knowing you're good and owning it. The fear of being visible. The contradiction between the confident person in V3/V5 and the real person underneath.
+
+PROMPTS (L1): 1) The unsaid thing they've been carrying, 2) Where it comes from — the root, 3) What becomes possible without it, 4) Message to someone fighting the same battle
+PROMPTS (L2): 1) Internal battle about claiming expertise, 2) The specific fear, 3) Cost of staying small, 4) Why they're still here despite the doubt
+</video_6_blueprint>
+
+<video_7_blueprint>
+VIDEO 7 — THE RESOLUTION — RETURNING WITH THE ELIXIR
+"Here's who I am now. Here's what I found. And here's where I'm going."
+Framework: Modified Hero's Journey
+Audience feels: Loyalty + "I want to keep following this person"
+Speaker feels: Ownership + Pride
+
+THE 7 RESOLUTION BEATS:
+1. Full Circle Loop (Hook) — Open by reaching back to Video 1. Not a recap — a CALLBACK. Reference where they started specifically enough that the audience remembers. Closing circles is deeply satisfying psychologically.
+2. Narrative Satisfaction — Expected vs. actual. What they thought this would be vs. what it turned out to be. Honest accounting, not highlight reel.
+3. New Normal Declaration — Name what's different. Specific, grounded. "I used to [X]. Now I [Y]." Small real shifts that reveal genuine change.
+4. Reciprocity (The Lesson / The Gift) — The elixir. "If you're where I was seven videos ago, here's what I wish someone had told me." Peer to peer, not teacher to student.
+5. Authority Affirmation — Authority doesn't need to be claimed. It IS. Everything they've done across the challenge is the proof.
+6. Bridge to Forever — The challenge becomes an ongoing relationship. Not "subscribe" — "this opened something that isn't going to close."
+7. Unfolding Horizon — Ends with an opening, not a conclusion. The story continues. A new chapter is beginning.
+
+TONE: Warm, reflective, the slowest pace of any video. Callback to Video 1 is specific. Expected vs. actual is the emotional core. The lesson is a gift, not a lecture. Forward look is open-ended and honest. Last line feels like a door opening.
+
+LEVEL 1 SPECIFIC: Full circle from nervous beginner to someone who did the thing. The elixir is a personal truth learned by doing. Forward look doesn't need a plan — just a direction.
+
+LEVEL 2 SPECIFIC: Full circle from invisible expert to someone who claimed their space. The elixir bridges personal growth and professional mission. Includes a soft, natural invitation — not a pitch, an open door. "If you're [specific person] dealing with [specific problem], here's how to find me." The invitation works BECAUSE of everything that came before it.
+
+CRITICAL FOR L2: Prompt 4 asks "what do you still need?" The speaker names their own gap. This is the funnel's secret weapon — the upsell becomes a warm answer to a question they already asked themselves ON CAMERA.
+
+PROMPTS (L1): 1) What they expected vs. reality, 2) What actually happened, 3) One truth they now know, 4) Message to someone where they were 7 videos ago, 5) What's next — the direction
+PROMPTS (L2): 1) What they were trying to prove and whether they proved it, 2) What this taught them about their expertise, 3) One thing they'd tell someone hiding behind their work, 4) What they still need — honestly, 5) The invitation to the right person
+</video_7_blueprint>
+
+<script_generation_instructions>
+When generating a script, you will receive:
+
+1. LEVEL (1 or 2)
+2. VIDEO NUMBER (1-7)
+3. ONBOARDING DATA (name, blocker/history, business stage, goal, mini-goal, commitment)
+4. CURRENT VIDEO'S JOURNAL ANSWERS
+5. ALL PREVIOUS VIDEOS' JOURNAL ANSWERS (for V2-V7)
+
+PROCESS:
+1. Identify the video number and level
+2. Load the corresponding blueprint
+3. Analyze the speaker's voice from their journal answers (vocabulary, emotion, rhythm, formality, confidence)
+4. Scan previous video answers for themes, phrases, and details to reference or build on
+5. Write the script hitting every structural beat in the blueprint, in order
+6. Verify the script sounds like the SPEAKER, not like a copywriter
+7. Verify the script is approximately 220-270 words
+8. Verify no "content creator" language, CTAs (except V7L2 soft invitation), hashtags, or emojis
+
+OUTPUT FORMAT:
+Return ONLY the script text. No labels, no headers, no stage directions, no [BEAT 1] markers, no formatting. Just the words the person would say out loud to a camera. One continuous piece of spoken text that flows naturally.
+
+If a journal answer is blank or clearly placeholder text (like "___"), work around it. Use the other answers to fill the gap. Never output a blank section or placeholder in the script.
+</script_generation_instructions>
+
+<quality_standards>
+THE SCRIPT PASSES IF:
+- The speaker would read it and think "that sounds like me, but better"
+- A stranger watching would stop scrolling within the first 5 seconds
+- It hits every structural beat without feeling formulaic
+- It sounds SPOKEN, not written — you can hear a real person saying this
+- It makes the speaker feel like a hero in their own story without being grandiose
+- It creates the specific emotional response listed in the blueprint (curiosity, insight, trust, etc.)
+- It's between 220-270 words
+- There is zero marketing language, zero "content creator" language, zero CTAs (except V7L2)
+
+THE SCRIPT FAILS IF:
+- It sounds like AI wrote it (generic, smooth, overly polished)
+- It sounds like a different person than the one who wrote the journal answers
+- It uses any form of "hey guys," "in this video," "let me share," "don't forget to," etc.
+- It wraps everything in a neat bow when the blueprint calls for open loops or unresolved honesty
+- It manufactures emotion the speaker didn't express in their answers
+- It turns vulnerability into a lesson prematurely (especially in V6)
+- It pitches anything (except the soft V7L2 invitation)
+- It reads like a script instead of sounding like a person talking
+</quality_standards>`;
+
+async function callDeepSeekAPI(userMessage) {
+  const apiKey = state.apiKey || localStorage.getItem('7vc_api_key');
+  if (!apiKey) return null;
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userMessage }
+      ],
+      max_tokens: 1000,
+      temperature: 0.8
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error && err.error.message ? err.error.message : 'API error ' + response.status);
+  }
+  const data = await response.json();
+  return data.choices && data.choices[0] && data.choices[0].message
+    ? data.choices[0].message.content.trim() : null;
+}
+
+function buildAPIUserMessage(videoIdx) {
+  const level = state.level || 1;
+  const videoNum = videoIdx + 1;
+  const sv = state.videos;
+  const name = state.name || '';
+
+  // Onboarding data block
+  const lines = ['- Name: ' + (name || '(not provided)')];
+  lines.push('- Posted before: ' + (state.posted === 'yes' ? 'Yes' : 'No'));
+  if (state.history) lines.push('- Posting history: ' + (historyLabels[state.history] || state.history));
+  if (state.blocker) lines.push('- Blocker: ' + (blockerLabels[state.blocker] || state.blocker));
+  if (state.business) lines.push('- Business stage: ' + (businessLabels[state.business] || state.business));
+  if (state.goal) lines.push('- Primary goal: ' + (goalLabels[state.goal] || state.goal));
+  if (state.minigoal) lines.push('- Mini-goal: ' + (miniGoalMap[state.minigoal] || state.minigoalText || state.minigoal));
+  const commitText = 'By the end of this challenge I will ' + (state.minigoalText || 'complete this challenge') + ', even if it\'s messy, even if nobody watches, and even if I have to do it scared.';
+  lines.push('- Commitment: ' + commitText);
+
+  let msg = 'Generate Video ' + videoNum + ' script.\n\nLEVEL: ' + level + '\nVIDEO: ' + videoNum + '\n\nONBOARDING DATA:\n' + lines.join('\n');
+
+  // V1: prefilled editable prompts
+  if (videoIdx === 0) {
+    const q2 = state.mvoQ2 || {};
+    const q3 = state.mvoQ3 || {};
+    const q4 = state.mvoQ4 || {};
+    let p1, p2, p3, l1, l2, l3;
+    if (level === 1) {
+      p1 = sv.v0p0 || q2.before_full || '';
+      p2 = sv.v0p1 || q3.catalyst_full || '';
+      p3 = sv.v0p2 || q4.village_full || '';
+      l1 = 'Your name and one thing about you';
+      l2 = "What's been stopping you from posting until now";
+      l3 = "Why you're doing this challenge right now";
+    } else {
+      p1 = sv.v0p0 || q2.village_full || '';
+      p2 = sv.v0p1 || q3.before_full || '';
+      p3 = sv.v0p2 || q4.crack_full || '';
+      l1 = 'Your name and what you do (or what you\'re building toward)';
+      l2 = "Why you've been staying invisible until now";
+      l3 = "What you want to prove by doing this challenge";
+    }
+    msg += '\n\nPREFILLED PROMPTS (user may have edited these):\n';
+    msg += '1. ' + l1 + ': ' + name + (p1 ? ', ' + p1 : '') + '\n';
+    msg += '2. ' + l2 + ': ' + (p2 || '(not provided)') + '\n';
+    msg += '3. ' + l3 + ': ' + (p3 || commitText);
+    return msg;
+  }
+
+  // V2-V7: add previous video answers + scripts
+  const videos = getVideos();
+  for (let i = 0; i < videoIdx; i++) {
+    const prevVideo = videos[i];
+    let prevBlock = '\n\nVideo ' + (i + 1) + ' prompts:';
+    if (i === 0) {
+      // V1 answers from prefilled prompts
+      const q2 = state.mvoQ2 || {};
+      const q3 = state.mvoQ3 || {};
+      const q4 = state.mvoQ4 || {};
+      if (level === 1) {
+        prevBlock += '\n1. Your name and one thing about you: ' + name + (sv.v0p0 || q2.before_full ? ', ' + (sv.v0p0 || q2.before_full) : '');
+        prevBlock += '\n2. What\'s been stopping you: ' + (sv.v0p1 || q3.catalyst_full || '(not provided)');
+        prevBlock += '\n3. Why doing this challenge: ' + (sv.v0p2 || q4.village_full || commitText);
+      } else {
+        prevBlock += '\n1. Your name and what you do: ' + name + (sv.v0p0 || q2.village_full ? ', ' + (sv.v0p0 || q2.village_full) : '');
+        prevBlock += '\n2. Why you\'ve been invisible: ' + (sv.v0p1 || q3.before_full || '(not provided)');
+        prevBlock += '\n3. What you want to prove: ' + (sv.v0p2 || q4.crack_full || commitText);
+      }
+    } else {
+      prevVideo.prompts.forEach(function(p, pi) {
+        const val = sv[p.key] || '';
+        const cleanLabel = p.label.replace(/\s*___\s*$/, '').trim();
+        prevBlock += '\n' + (pi + 1) + '. ' + cleanLabel + ': ' + (val || '(no answer)');
+      });
+    }
+    const prevScript = sv['script_v' + i];
+    if (prevScript) prevBlock += '\n\nVideo ' + (i + 1) + ' script:\n' + prevScript;
+    msg += prevBlock;
+  }
+
+  // Current video prompts
+  const curVideo = videos[videoIdx];
+  msg += '\n\nCURRENT VIDEO ' + videoNum + ' PROMPTS:';
+  curVideo.prompts.forEach(function(p, pi) {
+    const val = sv[p.key] || '';
+    const cleanLabel = p.label.replace(/\s*___\s*$/, '').trim();
+    msg += '\n' + (pi + 1) + '. ' + cleanLabel + ': ' + (val || '(no answer provided)');
+  });
+  return msg;
+}
+
 // ── VIDEO DATA ────────────────────────────────────────
 const level1Videos = [
   {
@@ -1834,139 +2357,71 @@ const level1Videos = [
   },
   {
     title:"The Turning Point",
-    note:"People don't follow creators because of what they do — they follow them because of why they started. Give your audience the honest moment everything shifted. That's what turns a viewer into a follower.",
+    note:"Your audience doesn't follow creators because of what they know — they follow because of who they are. Video 2 is where you let them in. One surprising detail, something they wouldn't expect, and the thing you actually care about.",
     prompts:[
-      {label:"The moment that finally made me decide to start was ___",hint:"What was the real catalyst? Not the polished story — the actual thing that happened.",key:"v1p0",ph:"e.g. I watched someone with less experience than me doing exactly what I'd been too afraid to do and I realized I'd been waiting for permission no one was going to give me"},
-      {label:"The honest truth about what was holding me back was ___",hint:"The internal conflict. What were you actually afraid of or believing?",key:"v1p1",ph:"e.g. I kept telling myself I wasn't ready, but the truth was I was scared of being judged by people who already knew me"},
-      {label:"What I tried before that didn't work was ___",hint:"A failed attempt or wrong approach. Shows you tried, makes you real.",key:"v1p2",ph:"e.g. I tried scripting everything perfectly and it made me sound like a robot, so I stopped and never posted any of it"},
-      {label:"What finally shifted everything was realizing ___",hint:"The decision or realization that actually moved you to start.",key:"v1p3",ph:"e.g. that the people I wanted to reach couldn't find me if I wasn't showing up — so my silence wasn't protecting me, it was just hiding me"}
+      {label:"Where are you from, and what's one thing about your background that shaped who you are today?",hint:"Not your whole life story — just the one detail that if someone knew it, they'd understand you a little better. The town, the household, the experience, the thing that left a mark.",key:"v1p0",ph:"e.g. I grew up in a tiny town where the big Friday night event was the gas station — which sounds like nothing until you understand what it taught me about showing up when nobody's watching"},
+      {label:"What's something about you that surprises people when they find out?",hint:"The thing that doesn't match the rest of your story. The unexpected hobby, the weird skill, the career pivot nobody saw coming, the thing you're secretly passionate about that has nothing to do with anything else.",key:"v1p1",ph:"e.g. most people are surprised that I spent three years competing in improv comedy — which probably explains more about how I think than anything on my resume"},
+      {label:"What do you actually care about — and why does it feel important enough to talk about publicly?",hint:"Not your job description. The thing underneath it. The reason you light up about certain topics. The thing you wish more people understood or paid attention to.",key:"v1p2",ph:"e.g. what I actually care about is that people stop waiting to feel ready and start trusting that showing up imperfectly is worth more than not showing up at all"}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Catalyst Moment)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I want to tell you something I have not said out loud before.'},
-      {label:'THE INTERNAL CONFLICT (Vulnerability Entry)',   desc:'The honest internal struggle — the conflict you faced before you made the decision to move.',
-                                  text:`The moment that finally made me decide to start was ${v.v1p0||'___'}.`},
-      {label:'THE FALSE SOLUTION (Enemy Identification)',      desc:'The thing that didn\'t work — the wrong path that showed you what the real problem was.',
-                                  text:`The honest truth about what was holding me back? ${v.v1p1||'___'}. I had tried ${v.v1p2||'___'}.`},
-      {label:'THE DECISION TO SHOW UP (Agency Reclaim / Path Clarity)',    desc:'The moment you stopped waiting and chose to act — the reframe that gave you agency back.',
-                                  text:`What finally shifted everything was realizing ${v.v1p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'The next video is about what happened after that. Stay with me.'}
-    ],
-    compile:v=>`The moment that finally made me decide to start was ${v.v1p0||'___'}. The honest truth about what was holding me back? ${v.v1p1||'___'}. I had tried ${v.v1p2||'___'}. What finally shifted everything was realizing ${v.v1p3||'___'}.`
+    compile:v=>`Where I'm from: ${v.v1p0||'___'}. The thing that surprises people about me: ${v.v1p1||'___'}. What I actually care about: ${v.v1p2||'___'}.`
   },
   {
     title:"The First Epiphany",
-    note:"Every person watching you held some version of the belief you're about to challenge. One honest reframe, told through your real experience, is what builds intellectual trust.",
+    note:"Seven beats, one shift. The audience knows you and likes you after Video 2. Now you give them something they can't unsee. A belief you held, the moment it cracked, the new truth — simple enough to text to a friend.",
     prompts:[
-      {label:"I used to believe ___",hint:"The old belief — what you genuinely thought before. The more specific, the better.",key:"v2p0",ph:"e.g. I used to believe you had to be an expert before you could share anything online, or people would see right through you"},
-      {label:"The thing that started to crack that belief was ___",hint:"The evidence or moment that made you question it. Small is fine — just real.",key:"v2p1",ph:"e.g. the thing that cracked it was watching someone who knew less than me get massive engagement just by being honest about their struggle"},
-      {label:"The moment I actually saw it differently was ___",hint:"The realization — when it clicked. What happened or what did you realize?",key:"v2p2",ph:"e.g. the moment I saw it differently was when a comment from a total stranger said I needed to hear this on a video I almost didn't post"},
-      {label:"Now I believe ___",hint:"Your new belief. The one your audience might need permission to hold.",key:"v2p3",ph:"e.g. now I believe the right people don't need you to be an expert — they need you to be honest about being a few steps ahead of them"}
+      {label:"What's something you used to believe — about life, success, fear, identity, or how things work — that you held onto for a long time before you realized it wasn't true?",hint:"Not a small preference change. A deep belief — maybe one you built decisions around. Something that felt like bedrock until it cracked.",key:"v2p0",ph:"e.g. I used to believe that if I just worked hard enough and stayed quiet, the right people would eventually notice — and I built years of decisions around that idea"},
+      {label:"Tell the story of what happened that made you see it differently. Not when you 'decided to change your mind' — the actual experience. Where were you? What did you see, hear, or feel?",hint:"This is a moment, not a summary. Ground it in a real scene — the more specific and human, the more powerful it becomes.",key:"v2p1",ph:"e.g. I was sitting in my car after a meeting where I'd watched someone say something I'd been thinking for months — and they got all the credit. That was the moment I understood that staying quiet wasn't humility, it was just fear"},
+      {label:"Now that you see it differently — what's the new truth? Say it as simply as you can, like you're explaining it to someone you care about.",hint:"One or two sentences. If the old belief was the lens you were wearing, what's the prescription of the new one? The simpler you can make this, the harder it will hit.",key:"v2p2",ph:"e.g. the new truth is that waiting to be discovered is a strategy for staying invisible — the only people who get found are the ones who decide to be seen"},
+      {label:"What does it cost someone to keep believing the old way? Not in a dramatic sense — just honestly, what do they miss or lose without realizing it?",hint:"You can see both sides now. What's the invisible price someone pays when they're still stuck in the old one? It's about caring enough to name what you wish someone had named for you.",key:"v2p3",ph:"e.g. what it costs them is years — years of doing good work that nobody outside their immediate circle ever hears about, wondering why they feel invisible when they've been choosing invisibility"},
+      {label:"Why does this matter to you enough to say it out loud on camera?",hint:"You could have kept this to yourself. Why are you sharing it? Maybe because you see other people stuck where you were. That reason is the emotional engine of this video.",key:"v2p4",ph:"e.g. because I spent too long believing I wasn't the kind of person who did things like this — and I watch other people believe that same lie about themselves every day"}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Pattern Break)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I used to think something that was quietly keeping me stuck. And I am going to tell you exactly what it was.'},
-      {label:'THE STRUGGLE STORY (Discovery Arc)',     desc:'The honest story of the belief you held — and how it limited you before you discovered something better.',
-                                  text:`I used to believe ${v.v2p0||'___'}.`},
-      {label:'THE "AHA" MOMENT (Cognitive Reframe)',      desc:'The crack in the old belief — the real moment when a new understanding started to emerge.',
-                                  text:`The thing that started to crack that belief was ${v.v2p1||'___'}. The moment I actually saw it differently: ${v.v2p2||'___'}.`},
-      {label:'THE COST OF STAYING INVISIBLE (Cost Revelation / Simplicity Signal)',       desc:'The new belief and what it makes possible — the cost of not making this shift.',
-                                  text:`Now I believe ${v.v2p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Next video I am going to show you how this actually changed the way I show up. Worth watching.'}
-    ],
-    compile:v=>`I used to believe ${v.v2p0||'___'}. The thing that started to crack that belief was ${v.v2p1||'___'}. The moment I actually saw it differently: ${v.v2p2||'___'}. Now I believe ${v.v2p3||'___'}.`
+    compile:v=>`I used to believe ${v.v2p0||'___'}. The moment that changed it: ${v.v2p1||'___'}. The new truth: ${v.v2p2||'___'}. What the old belief costs: ${v.v2p3||'___'}. Why I'm saying this: ${v.v2p4||'___'}.`
   },
   {
     title:"The Progress Signal",
-    note:"Most people disappear after their first few videos. You're still here — and that matters more than you think. Share where you actually are and why you're still going.",
+    note:"You showed up again. That alone is the story. Now tell the truth about what this has actually been like — what surprised you, what's shifted, what's still hard. Real-time honesty builds trust faster than any polished content.",
     prompts:[
-      {label:"Where I am right now, honestly, is ___",hint:"The honest check-in. Not a highlight — where you genuinely are in the process.",key:"v3p0",ph:"e.g. where I am right now, honestly, is further along than I expected but still uncomfortable in ways I didn't anticipate"},
-      {label:"What I didn't expect to face was ___",hint:"The surprise — what's actually been hard, weird, or different than you imagined?",key:"v3p1",ph:"e.g. what I didn't expect to face was the voice in my head that kept telling me no one was watching so why was I doing this"},
-      {label:"Because of that, I had to adjust ___",hint:"What you changed, adapted, or learned because of that challenge.",key:"v3p2",ph:"e.g. I had to adjust my expectations — I stopped caring about views and started caring about whether the content was actually honest"},
-      {label:"The reason I'm still going is ___",hint:"Your commitment. Why does this still matter to you?",key:"v3p3",ph:"e.g. the reason I'm still going is that I made a commitment — not to the camera, but to the version of myself that finally decided to stop hiding"}
+      {label:"What's surprised you most about doing this so far — something you didn't expect, good or bad?",hint:"Maybe filming was easier than you thought. Maybe it was harder. Maybe people reacted in a way you didn't anticipate. What caught you off guard?",key:"v3p0",ph:"e.g. what surprised me most is how much lighter I feel after each video — like I'm putting something down I didn't realize I was carrying"},
+      {label:"What's one small thing that's shifted for you — even if it's subtle? A moment, a feeling, a realization, a reaction from someone?",hint:"It doesn't have to be dramatic. Maybe you noticed you were less nervous on Video 3 than Video 1. Maybe someone sent you a message. Name the small shift.",key:"v3p1",ph:"e.g. someone I hadn't talked to in two years messaged me after Video 2 and said 'I didn't know you felt that way' — and somehow that one message made the whole thing worth it"},
+      {label:"What's still hard? What are you still figuring out? Be specific.",hint:"Don't clean this up. The messy middle is where people trust you the most. What's the thing you're wrestling with right now — about this challenge, about yourself, about putting yourself out there?",key:"v3p2",ph:"e.g. I still hate watching myself back. Like physically uncomfortable. I don't know if that goes away or if you just learn to tolerate it"},
+      {label:"What would you tell someone who's watching you do this and thinking about starting themselves?",hint:"Not advice. Not motivation. Just the honest truth from someone who's a few days ahead of them. What do you know now that you didn't know before Video 1?",key:"v3p3",ph:"e.g. I'd tell them the first video is the hardest one — not because of the filming, but because it makes real something you've been keeping theoretical for a long time"}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Momentum Validation)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I am still here. And I want to be honest with you about what that has actually been like.'},
-      {label:'THE EXPERIENCE SO FAR (Small Win Proof)',   desc:'The honest check-in — where you are right now and the small wins worth acknowledging.',
-                                  text:`Where I am right now, honestly: ${v.v3p0||'___'}.`},
-      {label:'THE REALITY OF THE WORK (Real-Time Transparency)',      desc:'The unexpected challenge — being transparent about what the work actually looks like.',
-                                  text:`What I didn't expect to face was ${v.v3p1||'___'}. Because of that, I had to adjust ${v.v3p2||'___'}.`},
-      {label:'THE FORWARD SHIFT (Social Evidence)',       desc:'Why you\'re still going — the evidence that this is worth staying with.',
-                                  text:`The reason I am still going? ${v.v3p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Next video I am going to say something I have not heard many people in this space say. Do not miss it.'}
-    ],
-    compile:v=>`Where I am right now, honestly: ${v.v3p0||'___'}. What I didn't expect to face was ${v.v3p1||'___'}. Because of that, I had to adjust ${v.v3p2||'___'}. The reason I'm still going? ${v.v3p3||'___'}.`
+    compile:v=>`What's surprised me: ${v.v3p0||'___'}. One small shift: ${v.v3p1||'___'}. What's still hard: ${v.v3p2||'___'}. What I'd tell someone starting: ${v.v3p3||'___'}.`
   },
   {
     title:"The Second Epiphany",
-    note:"You've shown up, shared your story, and kept going. Now it's time to plant your flag. Share the conviction most people in your world have backwards — and why you believe what you believe.",
+    note:"You've earned the right to say something most people won't. This is your second big reframe — a belief you used to hold, what it cost you, and what opened up when you let it go. The more personal and specific, the more universal it lands.",
     prompts:[
-      {label:"Something most people in [your world] say is ___",hint:"The conventional wisdom — what everyone repeats. You've heard it a hundred times.",key:"v4p0",ph:"e.g. something most people in the creator space say is that you need to post every day to beat the algorithm"},
-      {label:"I used to believe that too, because ___",hint:"Be honest — show you weren't always different. What made this idea seem true to you?",key:"v4p1",ph:"e.g. I used to believe it too, because every piece of advice I read said consistency was the only way to grow"},
-      {label:"But what actually changed my mind was ___",hint:"The real evidence that shifted you. Something you experienced or observed.",key:"v4p2",ph:"e.g. but what actually changed my mind was seeing creators with less frequency and more honesty outgrow people who were grinding daily"},
-      {label:"So what I actually believe now is ___",hint:"Your real stance. The belief your audience might be waiting for permission to hold.",key:"v4p3",ph:"e.g. so what I actually believe now is that clarity beats volume — one honest video a week will do more than seven forgettable ones"}
+      {label:"What's something you believe that most people around you would disagree with — or at least wouldn't say out loud?",hint:"Not something designed to be controversial. Something genuinely true for you that goes against what your family, friends, coworkers, or culture treats as obvious.",key:"v4p0",ph:"e.g. I believe that most of what we call 'not being ready' is actually just fear of being judged — and that the preparation is usually a delay tactic we've convinced ourselves is responsible"},
+      {label:"Where did this belief come from? What did you experience or witness that made you unable to keep believing the popular version?",hint:"There was a before and an after. Something happened — maybe gradually, maybe in a single moment — that made the conventional wisdom impossible to keep holding.",key:"v4p1",ph:"e.g. it came from watching myself get ready for three years. Reading every book, taking every course, building every system. And then watching someone less prepared than me just start — and build something real"},
+      {label:"What was it costing you when you still believed the old way? Be specific about what you were doing, tolerating, or missing.",hint:"Before you saw this clearly, you were living inside the old belief. What did that actually look like day to day? What were you putting up with? What were you chasing that turned out to be empty?",key:"v4p2",ph:"e.g. it was costing me time I'll never get back and conversations I kept not having because I kept waiting to feel qualified enough to have them"},
+      {label:"What opened up or changed when you let go of the old belief? What became possible that wasn't before?",hint:"The other side. Not a fantasy — your actual experience of life after the shift. What does the world look like through the new lens?",key:"v4p3",ph:"e.g. what opened up was the ability to act before I felt ready — which sounds simple, but it changed everything about how I show up"},
+      {label:"If you could say this to one specific person who's still stuck in the old belief — someone you care about — what would you say to them?",hint:"Picture one person. Someone you know who's living in the old belief right now. What do you want to say to them through the camera? Not a lecture — a direct, personal message.",key:"v4p4",ph:"e.g. I'd say: you're not getting more ready. Every day you wait, you're not building courage — you're building a bigger story about why you can't start yet"}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Sacred Cow Slaughter)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I want to say something that most people in this space will not say. Stay with me for sixty seconds.'},
-      {label:'THE FALSE BELIEF (Logic Re-stack)',     desc:'The conventional wisdom — the shared belief that has been quietly holding people back.',
-                                  text:`Something most people say is ${v.v4p0||'___'}. I used to believe that too — ${v.v4p1||'___'}.`},
-      {label:'THE NEW REALIZATION (Paradigm Break)',      desc:'The evidence that shifted the belief — the moment you saw it differently.',
-                                  text:`But what actually changed my mind was ${v.v4p2||'___'}.`},
-      {label:'THE FUTURE SELF (Status Shift / Natural Invitation)',       desc:'The new belief and what it makes possible — who you become when you stop holding the old one.',
-                                  text:`So what I actually believe now? ${v.v4p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Next video I am going to get honest about something more personal. I think it will land differently than anything I have shared so far.'}
-    ],
-    compile:v=>`Something most people say is ${v.v4p0||'___'}. I used to believe that too — ${v.v4p1||'___'}. But what actually changed my mind was ${v.v4p2||'___'}. So what I actually believe now? ${v.v4p3||'___'}.`
+    compile:v=>`Something I believe that most people wouldn't say out loud: ${v.v4p0||'___'}. Where it came from: ${v.v4p1||'___'}. What the old belief cost me: ${v.v4p2||'___'}. What opened up: ${v.v4p3||'___'}. To the person still stuck: ${v.v4p4||'___'}.`
   },
   {
     title:"Why I'm Here",
-    note:"Your audience is starting to get you. Now they need to understand what you actually want for them. Connect your story to their possibility — without pitching anything.",
+    note:"You've been carrying something this whole challenge that you haven't said out loud yet. Video 6 is where you say it. The fear, the doubt, the deeper root — and what becomes possible when you name it. This is the video that turns viewers into believers.",
     prompts:[
-      {label:"The deeper reason I'm doing this — beyond content — is ___",hint:"What's actually driving you. Not the business goal, the human one.",key:"v5p0",ph:"e.g. the deeper reason I'm doing this is that I spent years watching people who looked like me decide they weren't the right type of person to be seen, and I don't want to be one of them anymore"},
-      {label:"The person I most want to reach is ___",hint:"Be specific — describe one person. Who are they, and what are they going through?",key:"v5p1",ph:"e.g. the person I most want to reach is someone who has something real to say but keeps waiting to feel qualified enough to say it"},
-      {label:"What I actually want for them is ___",hint:"The transformation. Not the result you promise — the one you genuinely care about.",key:"v5p2",ph:"e.g. what I actually want for them is to feel what I felt the first time someone said this helped me — because that changes how you see yourself"},
-      {label:"So if that person is watching — here's my honest invitation: ___",hint:"A soft, real open door for the right person. No pressure, just genuine.",key:"v5p3",ph:"e.g. if that person is watching — follow along. I'm not promising overnight results, but I am promising I'll keep showing up honestly, and I think that's actually worth something"}
+      {label:"What's the thing you've been carrying through this whole challenge that you haven't said on camera yet? The fear, the doubt, the struggle that's still present even though you keep showing up.",hint:"Not the surface-level stuff. Not 'filming is hard.' The REAL thing. Maybe it's the voice that says nobody cares. Maybe it's the comparison. Say the thing you've been avoiding.",key:"v5p0",ph:"e.g. the thing I've been carrying is the very specific fear that I'll finish all seven videos, put everything into this, and wake up to silence — and that silence will confirm the thing I've been trying to prove wrong"},
+      {label:"Where does that come from? Not the logical explanation — the deeper root. When did you first start believing that about yourself?",hint:"This fear or doubt didn't start with the challenge. It was there before. Trace it back. You don't have to go into full detail — just name the root.",key:"v5p1",ph:"e.g. it goes back further than this challenge. I think it started in the years I spent doing good work that nobody outside my immediate circle ever saw — and slowly convincing myself that was fine"},
+      {label:"What would it mean to you — really, honestly — if you could let go of that? What becomes possible on the other side of this battle?",hint:"Don't make this aspirational fluff. Think about it practically. What would you DO differently? How would you FEEL differently? What would you stop avoiding?",key:"v5p2",ph:"e.g. if I could let go of it, I think I'd stop waiting for proof before I acted. I'd just act. And I'd stop treating my own work like it needs to earn the right to exist before I show it to anyone"},
+      {label:"What do you want to say to anyone watching this who's fighting their own version of the same battle?",hint:"You've just told your story. The fear, the root, the possibility. What do you want to leave them with? Not advice — a message. The thing you wish someone had said to you when you were in the middle of the fight.",key:"v5p3",ph:"e.g. I want to say: the fact that you're watching this means part of you already knows. You don't need more proof. You just need to decide that this thing you're carrying doesn't get to keep making your decisions"}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Identity Call-to-Arms)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I want to talk about the real reason I am making these videos. Not the polished version — the actual one.'},
-      {label:'THE INTERNAL VALUES (Shared Values)',   desc:'The deeper reason you\'re here — the values driving this work beyond content goals.',
-                                  text:`The deeper reason I am doing this — beyond content — is ${v.v5p0||'___'}.`},
-      {label:'WHO THIS IS FOR (Polarization)',     desc:'The specific person you\'re making this for — polarizing clearly so the right person feels truly seen.',
-                                  text:`The person I most want to reach is ${v.v5p1||'___'}. What I actually want for them is ${v.v5p2||'___'}.`},
-      {label:'THE PERSONAL MISSION (Ethical Bridge)',desc:'Your honest invitation — the open door for the right person, without pressure.',
-                                  text:`So if that is you — ${v.v5p3||'___'}.`},
-      {label:'THE INVITATION (Ethical Bridge)',desc:'Closes in a way that starts a relationship, not just a view — plants the reason to come back.',
-                                  text:'Follow along. I will be here for the next one.'}
-    ],
-    compile:v=>`The deeper reason I'm doing this — beyond content — is ${v.v5p0||'___'}. The person I most want to reach is ${v.v5p1||'___'}. What I actually want for them is ${v.v5p2||'___'}. So if that's you — ${v.v5p3||'___'}.`
+    compile:v=>`What I've been carrying: ${v.v5p0||'___'}. Where it comes from: ${v.v5p1||'___'}. What letting go would mean: ${v.v5p2||'___'}. To anyone watching who's in the same battle: ${v.v5p3||'___'}.`
   },
   {
     title:"What I Learned",
-    note:"You started as someone deciding to show up. You're finishing as someone who did. That arc is the story. Close it honestly and leave one open door for the right person.",
+    note:"Seven videos. You did it. Now close the arc honestly. What did you think this was going to be? What actually happened? What do you know now that you didn't before? And where are you going next?",
     prompts:[
-      {label:"When I started this challenge, I was someone who ___",hint:"The honest before. Who were you — not in a dramatic way, just truthfully?",key:"v6p0",ph:"e.g. when I started this challenge, I was someone who had been meaning to start for two years and had found every reason not to"},
-      {label:"What this actually did was ___",hint:"The real result — inside and out. What changed, shifted, or surprised you?",key:"v6p1",ph:"e.g. what this actually did was prove to me that I'm capable of following through when I decide to, and that the hardest step really was the first one"},
-      {label:"The thing I didn't see coming was ___",hint:"The unexpected lesson. What surprised you that you'd want the next person to know?",key:"v6p2",ph:"e.g. the thing I didn't see coming was how much it changed how I talk about myself offline — I started believing the version of me I was putting on screen"},
-      {label:"If you're someone who [situation] — here's the door I'm leaving open: ___",hint:"Your final invitation. Talk to one specific person. What are you offering?",key:"v6p3",ph:"e.g. if you're someone who's been watching and wondering if this could work for you — it can, and I'd love to show you how. Follow me for what comes next."}
+      {label:"When you filmed Video 1, what did you think this challenge was going to be about? What did you expect to happen?",hint:"Think back to the person who pressed record on day one. What were you bracing for? What did you think would be hard? Be honest about the expectations — even the ones that seem naive now.",key:"v6p0",ph:"e.g. honestly, I thought this challenge was going to be about overcoming camera fear. I figured by Video 7 I'd just feel comfortable on camera. That's not what happened at all"},
+      {label:"What actually happened instead? What surprised you most — about the experience, about yourself, about how people responded?",hint:"The real version. Not the Instagram version. What was harder than expected? What was easier? What completely blindsided you?",key:"v6p1",ph:"e.g. what actually happened is that the camera got comfortable faster than I expected — but what surprised me most is that the videos I almost didn't post were the ones people responded to most"},
+      {label:"What's the one thing you know now that you didn't know before Video 1? Not a tip — a truth. Something you can only learn by doing, not by thinking about it.",hint:"The elixir. The thing you're bringing back from this journey. If you could go back and whisper one sentence to the person you were before this challenge, what would it be?",key:"v6p2",ph:"e.g. the one thing I know now is that showing up is the work — not what you show up saying. I kept thinking I needed better ideas. What I needed was just to start"},
+      {label:"If someone is watching this right now and they're exactly where you were seven videos ago — scared, uncertain, overthinking it — what do you want to say to them?",hint:"Not advice from a guru. A message from someone who JUST went through it. What's the honest truth from the other side?",key:"v6p3",ph:"e.g. I want to say: it's not going to feel the way you think it will. It's going to feel harder in some ways and easier in others. But the version of you on the other side of Video 7 is worth it"},
+      {label:"What's next for you? You don't need a plan — just a direction. What did this challenge open up that you want to keep going with?",hint:"You don't need to have figured out the rest of your life. But this challenge showed you something — a direction, a possibility, a next step. Saying it out loud is the beginning of making it real.",key:"v6p4",ph:"e.g. what's next for me is keeping going — not as a challenge, but because I finally understand that this is what showing up actually looks like, and I want to keep doing it"}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Full Circle Loop)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'Seven videos. I made it. And I want to be honest with you about what that actually means.'},
-      {label:'THE INTERNAL SHIFT (New Normal Declaration)',    desc:'The honest before/after — who you were when you started and how this changed you.',
-                                  text:`When I started this, I was someone who ${v.v6p0||'___'}. What this actually did: ${v.v6p1||'___'}.`},
-      {label:'THE FINAL LESSON (Authority Affirmation)',     desc:'The unexpected insight — what surprised you and what you\'d want the next person to know.',
-                                  text:`The thing I didn't see coming was ${v.v6p2||'___'}.`},
-      {label:'THE NEW CHAPTER (Unfolding Horizon)',desc:'Your honest final invitation — the open door for exactly the right person.',
-                                  text:`${v.v6p3||'___'}.`}
-    ],
-    compile:v=>`When I started this, I was someone who ${v.v6p0||'___'}. What this actually did: ${v.v6p1||'___'}. The thing I didn't see coming was ${v.v6p2||'___'}. ${v.v6p3||'___'}.`
+    compile:v=>`What I expected: ${v.v6p0||'___'}. What actually happened: ${v.v6p1||'___'}. The one truth I know now: ${v.v6p2||'___'}. To someone at the beginning where I was: ${v.v6p3||'___'}. What's next: ${v.v6p4||'___'}.`
   }
 ];
 
@@ -1980,141 +2435,71 @@ const level2Videos = [
   },
   {
     title:"The Origin Story",
-    note:"Your audience doesn't just want to buy from you — they want to understand you. This video answers the question they're already asking: why did you build this, and why should I trust you?",
+    note:"Your audience doesn't just want to know what you do — they want to understand how you became someone who knows this. This video tells the origin: how you got here, what you've seen, and why you can't stop caring about it.",
     prompts:[
-      {label:"Before I built this, the problem I kept seeing was ___",hint:"The gap you noticed in the market or in your clients' lives. What was broken or missing?",key:"v1p0",ph:"e.g. before I built this, the problem I kept seeing was brilliant people with real expertise who had no idea how to talk about what they do in a way that made anyone care"},
-      {label:"The moment I decided to do something about it was ___",hint:"The specific moment or event that moved you from frustrated to building.",key:"v1p1",ph:"e.g. the moment I decided to do something about it was when a client of mine tripled her rates just by changing how she described her work — and I realized the problem was never the work, it was always the words"},
-      {label:"What made it hard to start was ___",hint:"The real friction — doubt, risk, or something you had to overcome.",key:"v1p2",ph:"e.g. what made it hard to start was that I wasn't sure anyone would take me seriously when I didn't have a massive following or a fancy website"},
-      {label:"What I decided to build — and why — was ___",hint:"What you actually created, and the real reason behind it.",key:"v1p3",ph:"e.g. what I decided to build was a simple, repeatable system — because the problem was never a lack of talent, it was always a lack of clarity about how to communicate it"}
+      {label:"How did you get into this? Not the professional version — the real story of how you ended up knowing what you know.",hint:"Maybe it was accidental. Maybe you were trying to solve your own problem. Maybe someone else's problem landed in your lap and you realized you were good at this. What actually happened?",key:"v1p0",ph:"e.g. I got into this because my sister was drowning in debt after her divorce and I helped her build a plan that got her out in 18 months. Her friends started asking me for help. Then their friends."},
+      {label:"What's the thing you've noticed that most people get wrong about your area of expertise?",hint:"The mistake you see over and over. The bad advice that makes you cringe. The thing you wish you could shake people and tell them. You don't need to name names — just describe what you see happening.",key:"v1p1",ph:"e.g. everyone thinks the problem is discipline. It's not. Most people's money problems aren't math problems — they're emotional regulation problems wearing a math costume."},
+      {label:"Why does this matter to you personally — not professionally, personally?",hint:"Strip away the business angle entirely. Why do you CARE about this? What's the deeper reason this topic or this work gets under your skin in a way you can't ignore?",key:"v1p2",ph:"e.g. because I grew up watching money destroy my parents' marriage and I know it doesn't have to be like that."}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Catalyst Moment)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I want to tell you why I built this. Not the elevator pitch version — the real one.'},
-      {label:'THE INDUSTRY FRUSTRATION (Vulnerability Entry)',   desc:'The honest problem you kept seeing — the frustration that was the real catalyst for building this.',
-                                  text:`Before I built this, the problem I kept seeing was ${v.v1p0||'___'}.`},
-      {label:'THE BROKEN METHOD (Enemy Identification)',      desc:'The moment you decided to act — naming the broken method or missing solution that made your approach necessary.',
-                                  text:`The moment I decided to do something about it: ${v.v1p1||'___'}. What made it hard to start was ${v.v1p2||'___'}.`},
-      {label:'THE DECISION TO INNOVATE (Agency Reclaim / Path Clarity)',       desc:'What you built and why — the deliberate decision to create something better.',
-                                  text:`So what I decided to build — and why — was ${v.v1p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Next video I am going to challenge something my industry treats as settled. Stay with me for that one.'}
-    ],
-    compile:v=>`Before I built this, the problem I kept seeing was ${v.v1p0||'___'}. The moment I decided to do something about it: ${v.v1p1||'___'}. What made it hard to start was ${v.v1p2||'___'}. So what I decided to build — and why — was ${v.v1p3||'___'}.`
+    compile:v=>`How I got into this: ${v.v1p0||'___'}. What most people get wrong: ${v.v1p1||'___'}. Why it matters personally: ${v.v1p2||'___'}.`
   },
   {
     title:"The First Epiphany",
-    note:"Your audience has been told things that aren't working for them. One clear reframe, backed by what you've actually seen, is what makes people think: this person gets it.",
+    note:"Seven beats, one shift. You're not sharing a hot take — you're sharing a genuine paradigm shift. Something 'everyone knows' in your field that you've come to believe is wrong, the moment you saw the cracks, and the reframe that changes everything.",
     prompts:[
-      {label:"The thing most people in my industry believe is ___",hint:"The conventional wisdom — the thing that gets repeated constantly that you've seen fail.",key:"v2p0",ph:"e.g. the thing most people in my industry believe is that you need to be on every platform and post every day to grow"},
-      {label:"Here's what I've actually seen happen instead ___",hint:"A real example — something you've witnessed or experienced that contradicts the myth.",key:"v2p1",ph:"e.g. here's what I've actually seen: the people getting the best results are doing less but being far more intentional about who they're talking to"},
-      {label:"The way I actually see it is ___",hint:"Your reframe. Not a rant — a genuinely better lens on the problem.",key:"v2p2",ph:"e.g. the way I actually see it is that volume is a strategy for people without a message — specificity is the strategy for everyone else"},
-      {label:"When someone truly understands this, what becomes possible is ___",hint:"The transformation. What opens up for someone who adopts your view?",key:"v2p3",ph:"e.g. when someone truly understands this, they stop trying to reach everyone and start building real trust with the people who actually matter to their business"}
+      {label:"What's something that 'everyone knows' in your field or area of expertise that you've come to believe is wrong, incomplete, or actually harmful?",hint:"The advice that gets passed around like gospel. The method everyone defaults to. The first thing a beginner is told that a veteran knows is oversimplified. You've been close enough to see the cracks in it — what is it?",key:"v2p0",ph:"e.g. everyone says 'make a budget and stick to it' — the discipline narrative. I've watched hundreds of people make perfect budgets and fail completely within three weeks."},
+      {label:"Tell the story of when you first saw the cracks. What actually happened — the specific moment, client, project, or experience — that made you go 'wait, this doesn't work the way everyone says it does'?",hint:"A real story. Not 'I gradually realized over time' — a SCENE. The client who succeeded by doing the opposite. The project that failed despite following the playbook perfectly.",key:"v2p1",ph:"e.g. I had a client — smart woman, good job, made great money. She'd done every budget app, every system. Nothing stuck. An hour of conversation revealed she wasn't overspending from lack of discipline — she was overspending because spending was the only way she knew how to soothe herself after a bad day."},
+      {label:"What's actually true instead? Say it as plainly as you can — like you're letting someone in on something the industry doesn't want to admit.",hint:"The reframe. The new lens. If the old belief is the map everyone's using, your reframe is showing them the map is wrong and the real terrain looks completely different. Make it feel inevitable — not clever, not contrarian, just TRUE.",key:"v2p2",ph:"e.g. money problems are almost never math problems. They're emotional regulation problems wearing a math costume. Until you address why someone spends, no spreadsheet on earth will save them."},
+      {label:"What happens to people who keep following the conventional wisdom? What does it cost them that they don't even realize?",hint:"You've watched people go down this path. What do they sacrifice, waste, or miss because they're following a map that doesn't match the territory? Be specific — not 'they fail' but HOW they fail, what it looks like from the inside.",key:"v2p3",ph:"e.g. they keep failing at budgets and thinking THEY'RE broken. They're not broken. The approach is broken. They just keep getting more ashamed every time they 'fail' at something that was never designed to work for them."},
+      {label:"Why do you feel like this needs to be said? What's at stake if people in your space keep getting this wrong?",hint:"This is where your passion lives. The reason you can't just let this go. Maybe people are wasting years. Maybe the shame spiral is costing people their relationships. Why does this matter enough to put on camera?",key:"v2p4",ph:"e.g. because the shame spiral is killing people. Financial stress is the number one cause of relationship problems and one of the top causes of anxiety and depression. And we're out here telling people to track their lattes."}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Pattern Break)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I want to challenge something my industry treats as common sense. This might be a bit uncomfortable.'},
-      {label:'THE RESEARCH/WORK STORY (Discovery Arc)',     desc:'The conventional story — what the industry repeats and why it has failed the people you serve.',
-                                  text:`The thing most people in my industry believe is ${v.v2p0||'___'}. Here is what I have actually seen happen: ${v.v2p1||'___'}.`},
-      {label:'THE NEW INSIGHT (Cognitive Reframe)',      desc:'Your better lens — the reframe that changes how someone thinks about the whole problem.',
-                                  text:`The way I actually see it is ${v.v2p2||'___'}.`},
-      {label:'THE COST OF THE WRONG METHOD (Cost Revelation / Simplicity Signal)',       desc:'What becomes possible when someone understands the better way — and what it costs to keep the old one.',
-                                  text:`When someone truly understands this, ${v.v2p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Next video I am going to give you something actually useful — something most people in my space would charge for. Worth coming back for.'}
-    ],
-    compile:v=>`The thing most people in my industry believe is ${v.v2p0||'___'}. Here's what I've actually seen happen: ${v.v2p1||'___'}. The way I actually see it is ${v.v2p2||'___'}. When someone truly understands this, ${v.v2p3||'___'}.`
+    compile:v=>`What 'everyone knows' that I think is wrong: ${v.v2p0||'___'}. When I first saw the cracks: ${v.v2p1||'___'}. What's actually true: ${v.v2p2||'___'}. What it costs people to follow the old way: ${v.v2p3||'___'}. Why this needs to be said: ${v.v2p4||'___'}.`
   },
   {
-    title:"The Teaching Moment",
-    note:"This is where you demonstrate real value — not by talking about what you offer, but by actually giving something useful. One insight, explained simply, proves your expertise better than any testimonial.",
+    title:"The Progress Signal",
+    note:"You're in the middle of this challenge. Report honestly from there. Not a performance of progress — actual progress. What surprised you, what's working, what's still hard, and what you're starting to understand.",
     prompts:[
-      {label:"The one thing I wish every [your audience] understood is ___",hint:"One single insight that would genuinely change how they see or approach something.",key:"v3p0",ph:"e.g. the one thing I wish every service provider understood is that your offer isn't what you do — it's what changes for the client after you do it"},
-      {label:"Here's the simplest way I can explain it ___",hint:"Break it down like you're talking to someone smart who's brand new to your space.",key:"v3p1",ph:"e.g. here's the simplest way to explain it: most people describe their work in terms of what they deliver. The ones who grow fastest describe it in terms of what the client gains"},
-      {label:"The mistake people make when they miss this is ___",hint:"What happens when someone doesn't understand this? What goes wrong?",key:"v3p2",ph:"e.g. the mistake people make when they miss this is they keep lowering their prices hoping that's the problem, when the real issue is no one understands what they're actually buying"},
-      {label:"When someone actually applies this, what usually changes is ___",hint:"The result. What does applying this actually look like in practice?",key:"v3p3",ph:"e.g. when someone actually applies this, their sales conversations completely change — because now they're speaking the language of outcomes, not effort"}
+      {label:"What's surprised you about trying to communicate your expertise on camera? What's different about it than you expected?",hint:"Maybe you realized how hard it is to be simple. Maybe you discovered that the thing you thought was your main message isn't actually what resonates. Maybe doing this publicly is teaching you something about your own expertise that you didn't see before.",key:"v3p0",ph:"e.g. I assumed the hard part would be the camera. It's not. The hard part is figuring out what to leave out — I know too much and I'm still learning how to be concise without losing the point."},
+      {label:"What's one moment or result so far that made you think 'okay, this is actually working' — even if it was small?",hint:"A comment from the right kind of person. A conversation that started because of a video. A moment where you explained something and it landed better than you expected. Something that showed you there's traction here.",key:"v3p1",ph:"e.g. someone I've never met messaged me after Video 2 to say they'd been thinking about what I said for two days. That was the moment I stopped wondering if this was worth doing."},
+      {label:"What's still hard about this? What are you still wrestling with — about the content, about showing up, about putting your knowledge out there?",hint:"The real friction. Maybe it's the vulnerability of being visible. Maybe it's the gap between what you know and how to say it concisely. Maybe it's imposter syndrome showing up even though you KNOW you're good at this. Name it.",key:"v3p2",ph:"e.g. the thing I'm still wrestling with is the gap between how clearly I can think through this with a client and how fuzzy it feels when I try to say it into a camera in two minutes."},
+      {label:"What are you starting to understand about your audience, your message, or yourself that you didn't understand before this challenge?",hint:"A few days of putting yourself out there teaches you things that years of planning never could. What's becoming clearer? About who responds to you, about what you actually want to say, about how this could grow into something real?",key:"v3p3",ph:"e.g. I'm starting to understand that the people who need me most aren't the ones I was picturing — they're quieter, more self-aware, and they're looking for permission to trust what they already know, not more information."}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Momentum Validation)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I am going to give you something actually useful in the next sixty seconds. No pitch. Just the thing.'},
-      {label:'THE LIVE DEMONSTRATION (Expert Ease)',   desc:'The core insight — the thing you wish every person in your space understood, explained simply.',
-                                  text:`The one thing I wish every person in my space understood is ${v.v3p0||'___'}. Here is the simplest way I can explain it: ${v.v3p1||'___'}.`},
-      {label:'THE SPECIFIC RESULT (Small Win Proof)',       desc:'What applying this actually looks like — the concrete result someone can expect.',
-                                  text:`When someone actually applies this, ${v.v3p3||'___'}.`},
-      {label:'THE CLIENT EVIDENCE (Social Evidence)',      desc:'The cost of missing this insight — the mistake people keep making without this knowledge.',
-                                  text:`The mistake people make when they miss this is ${v.v3p2||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Next video is personal. I am going to share a mistake I made in my work — and what it cost me. Worth coming back for.'}
-    ],
-    compile:v=>`The one thing I wish every person in my space understood is ${v.v3p0||'___'}. Here's the simplest way I can explain it: ${v.v3p1||'___'}. The mistake people make when they miss this is ${v.v3p2||'___'}. When someone actually applies this, ${v.v3p3||'___'}.`
+    compile:v=>`What surprised me about doing this: ${v.v3p0||'___'}. One moment traction showed up: ${v.v3p1||'___'}. What's still hard: ${v.v3p2||'___'}. What I'm learning about my audience, message, or myself: ${v.v3p3||'___'}.`
   },
   {
     title:"The Second Epiphany",
-    note:"A mistake you made, the lesson it cost you, and how it changed how you work — that combination creates something testimonials can't: genuine trust in your judgment.",
+    note:"Deeper. More personal. More convicted. The biggest myth in your field — not a tip, a genuine paradigm shift earned through doing the work. You're not sharing an opinion, you're sharing what you can't unsee.",
     prompts:[
-      {label:"A mistake I used to make in my work was ___",hint:"Something specific — not vague. The more real and specific, the more it lands.",key:"v4p0",ph:"e.g. a mistake I used to make in my work was trying to give every client the same process, regardless of where they actually were"},
-      {label:"At the time I believed ___",hint:"What were you thinking? What made this approach seem right?",key:"v4p1",ph:"e.g. at the time I believed having a consistent system was the professional move — I thought it showed I knew what I was doing"},
-      {label:"What I actually learned was ___",hint:"The real lesson — plain and honest.",key:"v4p2",ph:"e.g. what I actually learned was that the system was serving my ego, not my clients — and the best results came when I actually listened first"},
-      {label:"How it changed the way I work is ___",hint:"The practical shift. What do you do differently now because of this?",key:"v4p3",ph:"e.g. how it changed the way I work is that I now spend the first session doing nothing but asking questions — and that alone has been the single biggest driver of results for my clients"}
+      {label:"What's the biggest myth or most overused piece of advice in your field that you've come to believe is actually wrong — or even harmful?",hint:"The sacred cow. The thing every guru says. The advice that gets repeated so often nobody questions it anymore. You question it. You've seen what happens when people follow it. What is it?",key:"v4p0",ph:"e.g. the biggest myth in my field is that consistency is the answer — post every day, show up every day, grind every day. I've watched people burn out completely following that advice and then blame themselves for failing."},
+      {label:"Tell the story of your own relationship with this belief. Did you used to follow it? Teach it? What happened that made you turn against it?",hint:"The most powerful version of this is when YOU were a believer first. You followed the playbook. You recommended it to others. And then something happened that made you see it was broken. That personal journey from believer to heretic is what makes this credible, not preachy.",key:"v4p1",ph:"e.g. I used to tell my clients this. I believed in it. I built my own routine around it. And then I watched my most dedicated client — someone who followed every rule — completely crater her mental health in pursuit of consistency and end up taking six months off."},
+      {label:"What's the actual truth — the thing that works but nobody talks about because it's less sexy, less simple, or threatens the established way of doing things?",hint:"The real answer. The thing you've figured out through doing the work, not reading about the work. It might be simpler than the myth. It might be harder. But it's TRUE, and you can back it up with your own experience and results.",key:"v4p2",ph:"e.g. depth beats volume every time. One video that changes how someone thinks is worth more than thirty that they half-watch. The people winning aren't the ones posting most — they're the ones saying the most true thing."},
+      {label:"What happens to people who keep following the myth? What have you watched it cost your peers, your clients, or people in your space?",hint:"Be specific. Not 'they fail' — HOW do they fail? What does it look like? The wasted money, the wasted time, the frustration, the quitting.",key:"v4p3",ph:"e.g. they burn out. They create for months, see no results, decide they're not interesting enough, and quit. The myth told them consistency would compound. Nobody told them they also needed to have something worth saying."},
+      {label:"Who specifically needs to hear this — and what would change for them if they actually believed you?",hint:"Picture one specific person. A client, a peer, someone who asked you for advice last week. If THEY got this — really got it — what would shift for them? That's the emotional engine. That's why you're saying this out loud instead of keeping it to yourself.",key:"v4p4",ph:"e.g. this is for the expert who's been posting dutifully for months with nothing to show for it and is starting to think the problem is them. It's not them. They just got sold a system designed for content farms, not humans with something to say."}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Sacred Cow Slaughter)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I want to tell you about a mistake I made in my work. A real one. Not a humble-brag — an actual miss.'},
-      {label:'THE INDUSTRY MYTH (Logic Re-stack)',     desc:'The conventional approach — the mistake you made because it\'s what everyone believes.',
-                                  text:`A mistake I used to make in my work was ${v.v4p0||'___'}. At the time, I believed ${v.v4p1||'___'}.`},
-      {label:'THE BETTER WAY (Paradigm Break)',      desc:'What you actually learned — the paradigm shift that changed your whole approach.',
-                                  text:`What I actually learned was ${v.v4p2||'___'}.`},
-      {label:'THE NATURAL SOLUTION (Status Shift / Natural Invitation)',       desc:'How this changed how you work — the practical shift that your clients now benefit from.',
-                                  text:`How it changed the way I work: ${v.v4p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Next video I am walking you through exactly what it looks like to work with me. The real process, not the pitch.'}
-    ],
-    compile:v=>`A mistake I used to make in my work was ${v.v4p0||'___'}. At the time, I believed ${v.v4p1||'___'}. What I actually learned was ${v.v4p2||'___'}. How it changed the way I work: ${v.v4p3||'___'}.`
+    compile:v=>`The biggest myth in my field: ${v.v4p0||'___'}. My own journey with this belief: ${v.v4p1||'___'}. What's actually true: ${v.v4p2||'___'}. What it costs people who keep following the myth: ${v.v4p3||'___'}. Who specifically needs to hear this: ${v.v4p4||'___'}.`
   },
   {
-    title:"How I Actually Work",
-    note:"People don't buy outcomes — they buy confidence in the process that gets them there. Walk your audience through what it feels like to work with you, without pitching anything.",
+    title:"Why I'm Still Here",
+    note:"This is the video most people skip because it feels too vulnerable. That's exactly why it's the most important one. The internal battle about claiming your expertise publicly — said out loud, on camera — is what makes every other video retroactively believable.",
     prompts:[
-      {label:"When someone comes to me, they're usually dealing with ___",hint:"Their emotional reality — not a problem statement, but how they're actually feeling when they arrive.",key:"v5p0",ph:"e.g. when someone comes to me, they're usually dealing with the feeling that they're doing everything right and still not moving — there's a specific kind of exhaustion that comes with that"},
-      {label:"The first thing we actually do together is ___",hint:"Your real first step. Not the pitch version — what literally happens in the first conversation or first week.",key:"v5p1",ph:"e.g. the first thing we actually do is strip away everything that's not essential — most people come in with too many priorities, and we spend the first session getting honest about what actually matters"},
-      {label:"The shift most people experience is ___",hint:"Not the final outcome — the mindset or approach that changes during the process.",key:"v5p2",ph:"e.g. the shift most people experience is going from feeling stuck because they don't know enough to realizing they already know what to do — they just needed someone to help them see it clearly"},
-      {label:"By the end, most people find ___",hint:"The transformation — what's genuinely different on the other side?",key:"v5p3",ph:"e.g. by the end, most people find they have more momentum in four weeks than they had in the previous year — not because I gave them something new, but because we cleared away what was in the way"}
+      {label:"What's the internal battle you're fighting about putting yourself out there as someone with real expertise? The thing that makes you hesitate even though you KNOW you're good at this.",hint:"Imposter syndrome. Comparison. The fear of being 'that person' who promotes themselves. The voice that says your experience doesn't count because you don't have the right credentials, the right following, the right whatever. What's YOUR version of that battle?",key:"v5p0",ph:"e.g. my version of this is the credential question — I don't have letters after my name. I learned everything I know from fifteen years of doing this work with real people. But the voice still shows up asking who I think I am."},
+      {label:"What's the specific fear? If you imagine fully owning your expertise publicly — being visible, being known for what you know — what's the worst thing that could happen? Say it out loud.",hint:"Sometimes the fear is concrete: 'people from my old life will judge me.' Sometimes it's abstract: 'what if I put myself out there and nobody cares.' Sometimes it's deeper: 'what if I'm not actually as good as I think I am.' Name the actual fear. Not the category — the specific thought.",key:"v5p1",ph:"e.g. the specific fear is that someone I respect will watch one of these videos and think 'she's overreaching.' That one imaginary judgment has cost me more than two years of staying quiet."},
+      {label:"What's it been costing you to stay small? Not in money — in impact, in fulfillment, in the people you could be helping but aren't because you've been hiding.",hint:"You know there are people who need what you know. You've probably met some of them. What happens to them because you haven't stepped into this fully? And what happens to YOU — what are you leaving on the table by playing it safe?",key:"v5p2",ph:"e.g. what it's been costing me is harder to name than money. There are people right now making the exact mistakes I know how to prevent, and I haven't shown up for them because I've been waiting to feel ready."},
+      {label:"Despite all of that — why are you still here? Why haven't you quit? What's the thing that keeps pulling you forward even when the doubt is loud?",hint:"Something is stronger than the fear. A purpose, a person, a vision, a stubborn refusal to let the doubt win. That thing — whatever it is — is the real engine underneath everything you've built so far. Name it.",key:"v5p3",ph:"e.g. I'm still here because I keep meeting people who are stuck in the exact place I was stuck in. And when I talk to them — even for twenty minutes — something shifts. That shift is what I'm here for. The doubt is just the admission fee."}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Identity Call-to-Arms)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'I want to walk you through what it actually looks like to work with me. Not the sales version — what really happens.'},
-      {label:'WHO WE SERVE (Polarization)',      desc:'Who you work with — being clear about who this is for and who it\'s not.',
-                                  text:`When someone comes to me, they are usually dealing with ${v.v5p0||'___'}.`},
-      {label:'THE BUSINESS VALUES (Shared Values)',       desc:'The first step — what actually happens when you start working together.',
-                                  text:`The first thing we actually do together is ${v.v5p1||'___'}.`},
-      {label:'THE TRANSFORMATION (Shared Values)',    desc:'The shift most people experience — the internal and external change that happens through the work.',
-                                  text:`The shift most people experience is ${v.v5p2||'___'}.`},
-      {label:'THE INDUSTRY MISSION (Ethical Bridge)',desc:'The outcome — what most people find on the other side of the work.',
-                                  text:`By the end, most people find ${v.v5p3||'___'}.`},
-      {label:'OPEN LOOP',         desc:'Ends with tension that pulls them toward the next video — gives them a reason to stay.',
-                                  text:'Last video is coming. I am going to close this honestly — and leave one door open. If any of this has resonated, you will not want to miss it.'}
-    ],
-    compile:v=>`When someone comes to me, they're usually dealing with ${v.v5p0||'___'}. The first thing we actually do together is ${v.v5p1||'___'}. The shift most people experience is ${v.v5p2||'___'}. By the end, most people find ${v.v5p3||'___'}.`
+    compile:v=>`The internal battle I'm fighting: ${v.v5p0||'___'}. The specific fear: ${v.v5p1||'___'}. What staying small has cost me: ${v.v5p2||'___'}. Why I'm still here despite the doubt: ${v.v5p3||'___'}.`
   },
   {
-    title:"What's Next",
-    note:"Seven videos. That's a full story — your origin, your beliefs, your process, your character. Close the arc honestly and leave one open door for the right person.",
+    title:"What I Learned",
+    note:"Seven videos. A complete arc. Close it honestly — what you set out to prove, what you actually learned, what you'd tell someone at the beginning, and one open door for the right person.",
     prompts:[
-      {label:"I started this challenge wanting to prove ___",hint:"What was your original intention? What were you out to show — yourself or your audience?",key:"v6p0",ph:"e.g. I started this challenge wanting to prove that you don't need a massive following or a polished brand to have a real conversation with the right people"},
-      {label:"What I actually discovered was ___",hint:"The honest finding. What surprised you, shifted, or became real during this process?",key:"v6p1",ph:"e.g. what I actually discovered was that the most engaged response I got came from the video I almost didn't post because I thought it was too honest"},
-      {label:"The thing that surprised me most was ___",hint:"Something you didn't expect — about your audience, yourself, or the process.",key:"v6p2",ph:"e.g. the thing that surprised me most was how much clarity I got about my own work just from the act of trying to explain it simply every day"},
-      {label:"If you're a [your audience] and [situation], here's my honest invitation: ___",hint:"Your open door. Not a hard sell — a real, specific invitation for exactly the right person.",key:"v6p3",ph:"e.g. if you're a service provider who's been showing up inconsistently because you're not sure what to say, I'd love to help you fix that. DM me the word STORY and let's talk."}
+      {label:"When you filmed Video 1, what were you trying to prove — to yourself, to your audience, to your industry? Did you prove it?",hint:"Go back to the beginning. You had an intention — maybe it was clear, maybe it was vague. What was it? And now, seven videos later — did the challenge deliver what you expected? Or did it deliver something else entirely?",key:"v6p0",ph:"e.g. I started this wanting to prove I could show up consistently without a perfect strategy in place. Did I prove it? Sort of. What I actually proved was more interesting — that the strategy becomes obvious once you start."},
+      {label:"What did this challenge teach you about your own expertise that you didn't know before? Not about content or filming — about the actual WORK you do and who you do it for.",hint:"Putting your knowledge on camera forces a kind of clarity that nothing else does. You had to simplify. You had to choose what matters. What did that process reveal about what you actually know and what you actually care about?",key:"v6p1",ph:"e.g. this challenge taught me that I know far more than I realize, and I've been gatekeeping it behind a fear of saying something imperfect. The act of saying it imperfectly taught me more about my expertise than a year of preparation would have."},
+      {label:"What's the one thing you'd tell someone in your field who's been hiding behind their work instead of putting themselves out there?",hint:"You were that person seven videos ago. Now you're not. What do you know from the inside that they can't see from the outside? Not motivational fluff — the real, practical, emotional truth about what it takes and what it gives back.",key:"v6p2",ph:"e.g. I'd tell them: the fear doesn't go away before you start. It goes away because you started. There's no version of this where you feel ready first."},
+      {label:"What do you still need? Be honest. What did this challenge show you about where you need to grow, what support you need, or what's missing from your next chapter?",hint:"You just did something real. You proved something. And in the process, you probably saw clearly what the next level requires. Maybe it's help with systems. Maybe it's community. Maybe it's accountability. Whatever it is — naming it isn't weakness. It's the most strategic thing you can do.",key:"v6p3",ph:"e.g. what I still need is a real framework for turning this visibility into actual conversations with the right people. The videos are working. I don't yet have a clear path from 'someone watches' to 'someone reaches out.'"},
+      {label:"If the right person is watching this — the exact person you've been making these videos for — what's your invitation to them? Not a pitch. An open door.",hint:"You've spent seven videos showing this person who you are, what you know, and what you believe. They trust you. So what do you want to say to them? The specific person, the specific problem, the specific next step. That's it. That's enough.",key:"v6p4",ph:"e.g. if you're a consultant or coach who knows you're good at what you do but keeps struggling to get visible in a way that feels authentic — reach out. Not to pitch you anything. Just to talk about what's actually in the way."}
     ],
-    layerMap:v=>[
-      {label:'HOOK (Full Circle Loop)',              desc:'Grabs attention in the first two seconds — gives the viewer a reason to keep watching before you say anything else.',
-                                  text:'Seven videos. Done. And I want to tell you honestly — this is not the ending I expected.'},
-      {label:'THE BUSINESS SHIFT (New Normal Declaration)',    desc:'The honest before/after — what you set out to prove and what you actually discovered.',
-                                  text:`I started this challenge wanting to prove ${v.v6p0||'___'}. What I actually discovered was ${v.v6p1||'___'}.`},
-      {label:'THE FINAL PROOF (Authority Affirmation)',     desc:'The unexpected finding — the thing that surprised you most and validates the whole journey.',
-                                  text:`The thing that surprised me most was ${v.v6p2||'___'}.`},
-      {label:'THE PARTNERSHIP INVITATION (Unfolding Horizon)',desc:'Your open door — the honest, specific invitation for the right person.',
-                                  text:`${v.v6p3||'___'}.`}
-    ],
-    compile:v=>`I started this challenge wanting to prove ${v.v6p0||'___'}. What I actually discovered was ${v.v6p1||'___'}. The thing that surprised me most was ${v.v6p2||'___'}. ${v.v6p3||'___'}.`
+    compile:v=>`What I was trying to prove + did I: ${v.v6p0||'___'}. What the challenge taught me about my expertise: ${v.v6p1||'___'}. What I'd tell someone still hiding: ${v.v6p2||'___'}. What I still need: ${v.v6p3||'___'}. My invitation to the right person: ${v.v6p4||'___'}.`
   }
 ];
 
@@ -2218,25 +2603,25 @@ function _buildPromptsContent(container, v, idx) {
     const q4 = state.mvoQ4 || {};
     const v0Prompts = level === 1
       ? [
-          {key:'v0p0', label:'The struggle I\'ve been sitting with is ___',
-           hint:'From your earlier answers — adjust this to sound exactly like you.',
-           def: q2.before_full || ''},
-          {key:'v0p1', label:'What finally made today the day was ___',
-           hint:'Edit this to match how you\'d actually say it.',
+          {key:'v0p0', label:'Your name and one thing about you',
+           hint:'Pre-filled from your onboarding — edit anything that doesn\'t sound exactly like you.',
+           def: (state.name ? state.name + (q2.before_full ? ', ' + q2.before_full : '') : q2.before_full || '')},
+          {key:'v0p1', label:"What's been stopping you from posting until now",
+           hint:'Edit this to match how you\'d actually say it in your own words.',
            def: q3.catalyst_full || ''},
-          {key:'v0p2', label:'I\'m making these videos for ___',
-           hint:'Who are you here for? Describe them in your own words.',
+          {key:'v0p2', label:"Why you're doing this challenge right now",
+           hint:'What\'s your honest reason? Adjust to sound like you.',
            def: q4.village_full || ''}
         ]
       : [
-          {key:'v0p0', label:'The people I\'m here for are ___',
-           hint:'From your earlier answers — adjust to sound exactly like you.',
-           def: q2.village_full || ''},
-          {key:'v0p1', label:'The thing they\'re working through right now is ___',
-           hint:'The core challenge your audience faces — edit if needed.',
+          {key:'v0p0', label:"Your name and what you do (or what you're building toward)",
+           hint:'Pre-filled from your onboarding — adjust to sound exactly like you.',
+           def: (state.name ? state.name + (q2.village_full ? ', ' + q2.village_full : '') : q2.village_full || '')},
+          {key:'v0p1', label:"Why you've been staying invisible until now",
+           hint:'The honest answer — edit to match how you\'d actually say it.',
            def: q3.before_full || ''},
-          {key:'v0p2', label:'The gap I\'ve spent time working through is ___',
-           hint:'From your earlier answers — edit if needed.',
+          {key:'v0p2', label:"What you want to prove by doing this challenge",
+           hint:'Your honest goal — edit to sound like you.',
            def: q4.crack_full || ''}
         ];
     // Pre-populate from MVO defaults on first load
@@ -2345,15 +2730,79 @@ const SCRIPT_LOADING_MSGS = [
   "Every great series started with a single video. This is yours.",
 ];
 
-function showScriptView(idx, skipLoading) {
+async function showScriptView(idx, skipLoading) {
   if (editingFromPlan || skipLoading) {
     _doShowScriptView(idx);
     return;
   }
+
+  const editKey = 'script_v' + idx;
+  const apiKey = state.apiKey || localStorage.getItem('7vc_api_key');
+
+  // If API key exists and this script hasn't been generated yet — call the API
+  if (apiKey && !state.videos[editKey]) {
+    const msgEl = document.getElementById('script-loading-msg');
+    const loadingWrap = document.querySelector('#screen-script-loading .v1-loading-wrap');
+    const loadingLabel = document.querySelector('#screen-script-loading .loading-label');
+    const errorSection = document.getElementById('script-error-section');
+
+    if (msgEl) msgEl.textContent = 'Crafting your script with AI...';
+    if (loadingLabel) loadingLabel.textContent = 'Building your script...';
+    if (loadingWrap) loadingWrap.style.display = '';
+    if (errorSection) errorSection.style.display = 'none';
+    showScreen('screen-script-loading');
+
+    try {
+      const userMessage = buildAPIUserMessage(idx);
+      const script = await callDeepSeekAPI(userMessage);
+      if (!script) throw new Error('No script returned from API — the response was empty.');
+      state.videos[editKey] = script;
+      saveProgress();
+      _doShowScriptView(idx);
+    } catch(err) {
+      // Hide spinner, show error UI with actual error message
+      if (loadingWrap) loadingWrap.style.display = 'none';
+      if (msgEl) msgEl.textContent = '';
+      if (errorSection) errorSection.style.display = '';
+      const errorMsg = document.getElementById('script-error-msg');
+      const retryBtn = document.getElementById('script-error-retry');
+      const fallbackBtn = document.getElementById('script-error-fallback');
+      // Show the real error so it can be diagnosed
+      const errText = err && err.message ? err.message : String(err);
+      const isCors = errText.toLowerCase().includes('fetch') || errText.toLowerCase().includes('network') || errText.toLowerCase().includes('cors');
+      const displayMsg = isCors
+        ? 'Connection blocked — your browser may be preventing the API call. Try opening this file through a local server (e.g. VS Code Live Server) instead of directly from your file system. Error: ' + errText
+        : 'API error: ' + errText + '\n\nUse "Use Template Instead" to continue without AI.';
+      if (errorMsg) {
+        errorMsg.textContent = displayMsg;
+        errorMsg.style.whiteSpace = 'pre-wrap';
+        errorMsg.style.fontSize = '14px';
+        errorMsg.style.textAlign = 'left';
+      }
+      if (retryBtn) retryBtn.onclick = () => showScriptView(idx);
+      if (fallbackBtn) fallbackBtn.onclick = () => {
+        // Fall back to compile() template
+        const videos = getVideos();
+        const v = videos[idx];
+        if (v.compile) state.videos[editKey] = v.compile(state.videos);
+        else if (v.beats) state.videos[editKey] = v.beats().map(b=>b.text).join('\n\n');
+        _doShowScriptView(idx);
+      };
+    }
+    return;
+  }
+
+  // No API key, or script already exists — use motivational loading message
   const msgs = SCRIPT_LOADING_MSGS;
   const msg = msgs[Math.floor(Math.random() * msgs.length)];
   const msgEl = document.getElementById('script-loading-msg');
+  const loadingWrap = document.querySelector('#screen-script-loading .v1-loading-wrap');
+  const loadingLabel = document.querySelector('#screen-script-loading .loading-label');
+  const errorSection = document.getElementById('script-error-section');
   if (msgEl) msgEl.textContent = msg;
+  if (loadingWrap) loadingWrap.style.display = '';
+  if (loadingLabel) loadingLabel.textContent = 'Building your script...';
+  if (errorSection) errorSection.style.display = 'none';
   showScreen('screen-script-loading');
   setTimeout(() => _doShowScriptView(idx), 1000);
 }
@@ -2795,9 +3244,11 @@ function togglePlanRow(i){
 function restartWizard(){
   if (!confirm('This will erase all your progress and start over. Are you sure?')) return;
   localStorage.removeItem(SAVE_KEY);
+  const savedApiKey = localStorage.getItem('7vc_api_key') || '';
   Object.keys(state).forEach(k=>state[k]=k==='videos'||k==='videoStatus'?{}:null);
   state.name='';state.minigoalText='';state.videoStatus={};
   state.mvoQ2=null;state.mvoQ3=null;state.mvoQ4=null;
+  state.apiKey = savedApiKey; // preserve API key across restarts
   mvoQ2Skipped=false;
   currentPreviewVideoNum=1;
   screenOrder=['screen-0','screen-1'];
@@ -3401,6 +3852,7 @@ function saveProgress() {
     mvoQ2:       state.mvoQ2       || null,
     mvoQ3:       state.mvoQ3       || null,
     mvoQ4:       state.mvoQ4       || null,
+    apiKey:      state.apiKey      || '',
     savedAt:     Date.now()
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
@@ -3432,6 +3884,7 @@ function loadProgress() {
       if (data.mvoQ2)       state.mvoQ2       = data.mvoQ2;
       if (data.mvoQ3)       state.mvoQ3       = data.mvoQ3;
       if (data.mvoQ4)       state.mvoQ4       = data.mvoQ4;
+      if (data.apiKey)      state.apiKey      = data.apiKey;
       // Restore mvoQ2Skipped flag from saved onboarding data
       if (data.mvoQ2 && (data.blocker || data.history)) mvoQ2Skipped = true;
     }
@@ -3444,8 +3897,8 @@ function continueSession() {
   if (state.level) {
     // Bug fix: state.level is numeric (1 or 2), never the string 'L1'
     screenOrder = state.level === 1
-      ? ['screen-0','screen-1','screen-2a','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen']
-      : ['screen-0','screen-1','screen-2b','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen'];
+      ? ['screen-0','screen-1','screen-2a','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-api-key','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen']
+      : ['screen-0','screen-1','screen-2b','screen-3','screen-4','screen-5','screen-6','screen-recap','screen-checklist','screen-api-key','screen-comm-layers','screen-mvo2','screen-mvo3','screen-mvo4','screen-7','screen-script','plan-screen'];
 
     // Find the first video that hasn't been filmed or skipped
     const videoCount = getVideos().length;
