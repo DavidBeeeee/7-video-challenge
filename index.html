@@ -1361,7 +1361,7 @@ body::before {
     <div style="font-size:22px;flex-shrink:0;margin-top:2px;">👀</div>
     <div>
       <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:4px;">David Bee will personally review your videos — if you want him to.</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.6;">Share them in the challenge group or send them directly to David Bee. Optional — but you'll get real feedback on what you're doing right, not just what to fix.</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">Share them in <a href="https://facebook.com/groups/coloradobiz" target="_blank" style="color:var(--teal);text-decoration:none;">the community</a> or send them directly to David Bee. Optional — but you'll get real feedback on what you're doing right, not just what to fix.</div>
     </div>
   </div>
 
@@ -1412,7 +1412,7 @@ body::before {
   <p class="screen-sub" style="font-size:15px;">Do you already know what you want to cover? A topic, a story, a feeling — anything. Don't overthink it. Just write.</p>
   <div class="input-group" style="margin-top:8px;">
     <label class="input-label">Your thoughts (totally optional — but useful)</label>
-    <span class="input-hint" style="font-size:11px;opacity:0.65;">The more you share here, the more your scripts will sound like <em>you</em>. Blank is fine too. This goes straight to the AI when it builds your scripts.</span>
+    <span class="input-hint" style="font-size:10px;opacity:0.65;">The more you share here, the more your scripts will sound like <em>you</em>. Blank is fine too. This goes straight to the AI when it builds your scripts.</span>
     <textarea class="text-input" id="freewrite-input" rows="6"
       style="resize:vertical;min-height:140px;line-height:1.7;"
       placeholder="I want to talk about why I finally started even though I had zero followers. Or maybe the thing I wish someone had told me when I was starting out. Or the embarrassing mistake that actually changed everything..."
@@ -1662,15 +1662,15 @@ body::before {
 
   <div id="plan-output"></div>
 
+  <div class="btn-row" style="margin-bottom:32px;">
+    <button class="btn-print" onclick="window.print()">Save as PDF</button>
+    <button class="btn-restart" onclick="restartWizard()">Start Over</button>
+  </div>
+
   <div class="mission-card" id="mission-card">
     <div class="m-label" id="mission-label">🎉 You Did It</div>
     <div class="m-title" id="mission-title">ALL 7 VIDEOS — COMPLETE</div>
     <div class="m-cta" id="mission-cta"></div>
-  </div>
-
-  <div class="btn-row" style="margin-bottom:32px;">
-    <button class="btn-print" onclick="window.print()">Save as PDF</button>
-    <button class="btn-restart" onclick="restartWizard()">Start Over</button>
   </div>
 
   <div class="cta-section">
@@ -2127,22 +2127,32 @@ Prompt type: Prefilled from onboarding (editable)
 Audience feels: Curiosity + Recognition
 Speaker feels: Nervous but committed
 
-STRUCTURAL BEATS:
-1. Audience Signal (Hook) — Open mid-thought with something that mirrors the universal experience of wanting to start something and not starting. Not content-specific — life-specific. The viewer should feel recognized before the speaker even introduces themselves.
-2. Trust Layer (Identity) — Name, one grounding detail, personality through HOW they talk. Not a bio — a vibe. The audience decides "do I trust this person" in 3 seconds.
-3. Empathy Lock / Mirror Moment — The specific flavor of WHY they haven't been doing this, based on their blocker. Camera fear is a different mirror than "I don't know what to say" which is different than "I keep starting over." Specificity creates the "wait, are you me?" moment.
-4. Open Loop (Start Declaration) — They're doing this challenge. They don't know what's going to happen. No promise of transformation. Just forward motion + uncertainty. That incompleteness is what makes people follow.
+⚠️ DECLARATION INJECTION — CRITICAL FOR VIDEO 1:
+The speaker's name introduction and challenge declaration are pre-written and will be automatically inserted between [OPEN LOOP] and [MEAT] by the system. You MUST NOT write the speaker's name, introduce them, or announce the 7-video challenge in [HOOK], [OPEN LOOP], or [MEAT]. The declaration handles all of that. Your [OPEN LOOP] should end with forward momentum or emotional tension that makes the viewer ready to meet this person. Your [MEAT] picks up AFTER the identity introduction — starting directly with the empathy lock.
 
-⚠️ VIDEO 1 CRITICAL RULE — 7 VIDEOS CHALLENGE ANNOUNCEMENT:
-The CTA of Video 1 MUST explicitly name "7 Video Challenge" or "7 videos" or "7-video series." This is non-negotiable. The audience needs to understand this is a deliberate multi-video commitment, not a one-off. Do NOT say "video series" or "content series" without the number. Do NOT omit the number. The hook and open loop create the pattern interrupt — the CTA must land the challenge structure explicitly to give the audience a reason to follow/return. For example: "I'm committing to 7 videos — no matter what" or "This is the start of a 7 Video Challenge I'm doing" or "I'm doing a 7-video challenge starting right now."
+EXACT SECTION MAPPING — each output section has one specific job:
+
+[HOOK] — Audience Signal (20–35 words)
+Open mid-thought with something that mirrors the universal experience of wanting to start something and not starting. Not content-specific — life-specific. The viewer should feel recognized before the speaker ever introduces themselves. Use the Fix Guide pattern.
+
+[OPEN LOOP] — Tension Bridge (30–50 words)
+Create tension or curiosity that bridges from the hook into the identity declaration. Signal that something important is about to shift — a commitment is being made. The OPEN LOOP should end with forward momentum so the declaration lands as inevitable, not abrupt. Use the Fix Guide pattern.
+
+[MEAT] — Empathy Lock + Commitment (120–150 words)
+Because the declaration handles name and identity, [MEAT] for Video 1 has three specific jobs — in order:
+1. EMPATHY LOCK: The specific flavor of WHY they haven't been posting until now (use their exact words from the "stopping you" prompt answer). Camera fear is different from "I don't know what to say" which is different from "I keep starting over." NEVER genericize this. If their answer is in the data, use their language. This is the "wait, are you me?" moment. This is the most important line in the script.
+2. WHY NOW: What shifted — why today instead of six months from now (from their "why you're doing this" answer). 1–2 sentences.
+3. WHO: Who is watching this. Who they're showing up for (from their "who to reach" answer). 1–2 sentences. Make the right person feel called in, not described at.
+If extra context was provided, weave it in naturally — don't append it.
+
+[CTA] — Forward Pull (25–45 words)
+⚠️ MUST explicitly name "7 Video Challenge" or "7 videos" or "7-video series" — non-negotiable. The audience must understand this is a deliberate multi-video commitment. Earns the follow without demanding it. Ends without resolution — the incompleteness is what makes people come back. Use the Fix Guide pattern.
 
 TONE: Voice memo to a friend. Slightly self-deprecating. Starts mid-thought. Acknowledges the embarrassment. Ends without resolution.
 
 LEVEL 1 SPECIFIC: Regular human doing something outside their comfort zone. No expertise. No credentials. The challenge gets sold through honest, slightly nervous commitment.
 
-LEVEL 2 SPECIFIC: Someone with expertise stepping into visibility. Quiet confidence underneath nervousness. They KNOW they're good at something — they just haven't figured out this part yet. The embarrassment is flavored differently: "I've been the person giving advice, not making videos about it."
-
-DATA AVAILABLE: name, blocker/history, business stage, primary goal, mini-goal, commitment statement.
+LEVEL 2 SPECIFIC: Someone with expertise stepping into visibility. Quiet confidence underneath nervousness. They KNOW they're good at something — they just haven't figured out this part yet. The embarrassment is flavored differently: "I've been the person giving advice, not making videos about it." IMPORTANT: Many Level 2 speakers do NOT have clients, a business, or specific results to cite. Never manufacture numbers, client results, or credentials they didn't express. Work only with what they gave you.
 </video_1_blueprint>
 
 <video_2_blueprint>
@@ -2312,19 +2322,28 @@ When generating a script, you will receive:
 4. CURRENT VIDEO'S JOURNAL ANSWERS
 5. ALL PREVIOUS VIDEOS' JOURNAL ANSWERS (for V2-V7)
 
+⚠️ VIDEO 1 SPECIAL RULE — READ BEFORE GENERATING VIDEO 1:
+For Video 1 of BOTH levels, the speaker's name introduction and challenge declaration are pre-written and inserted between [OPEN LOOP] and [MEAT] automatically by the system. This means:
+- DO NOT write the speaker's name in [HOOK], [OPEN LOOP], or [MEAT]
+- DO NOT write "I'm doing the 7 Video Challenge" or any challenge announcement in [HOOK], [OPEN LOOP], or [MEAT] — that language belongs ONLY in [CTA]
+- [MEAT] must start AFTER the identity introduction — open directly with the empathy lock (their specific blocker)
+- Your [OPEN LOOP] should end with emotional tension or forward momentum so the declaration feels like a natural next step, not a gear shift
+- The video's final structure for the viewer is: [HOOK] → [OPEN LOOP] → [DECLARATION — pre-written] → [MEAT] → [CTA]
+
 PROCESS:
 1. Identify the video number and level
-2. Load the corresponding blueprint AND the Fix Guide entry for this video/level
-3. Analyze the speaker's voice from their journal answers (vocabulary, emotion, rhythm, formality, confidence)
-4. Scan previous video answers for themes, phrases, and details to reference or build on
-5. Match the tone described in the Fix Guide for this specific video/level combination
-6. Write the HOOK — you MUST use one of the two Fix Guide hook options for this specific video/level as your structural template, adapted to their actual content (never copy verbatim, but the structure and opening rhythm must match one of the two options)
-7. Write the OPEN LOOP — you MUST use one of the two Fix Guide open loop options for this specific video/level as your structural template
-8. Write the story section: the middle section using ALL of the speaker's journal answers, in their voice
-9. Write the CTA — you MUST use one of the two Fix Guide CTA options for this specific video/level as your structural template. These are non-negotiable. The Fix Guide exists because these hooks/CTAs have been tested and work. Do not substitute your own.
-10. Verify the script sounds like the SPEAKER, not like a copywriter
-11. Verify total script is approximately 220-270 words across all four sections
-12. Verify no "content creator" language, hashtags, or emojis. No CTAs except the designated CTA section (and V7L2 soft invitation only)
+2. If Video 1: re-read the VIDEO 1 SPECIAL RULE above before writing a single word
+3. Load the corresponding blueprint AND the Fix Guide entry for this video/level
+4. Analyze the speaker's voice from their journal answers (vocabulary, emotion, rhythm, formality, confidence)
+5. Scan previous video answers for themes, phrases, and details to reference or build on
+6. Match the tone described in the Fix Guide for this specific video/level combination
+7. Write the HOOK — you MUST use one of the Fix Guide hook options for this specific video/level as your structural template, adapted to their actual content (never copy verbatim, but the structure and opening rhythm must match one of the options)
+8. Write the OPEN LOOP — you MUST use one of the Fix Guide open loop options for this specific video/level as your structural template
+9. Write the MEAT — use ALL of the speaker's journal answers, in their voice, following the exact beat order described in the blueprint for this video/level
+10. Write the CTA — you MUST use one of the Fix Guide CTA options for this specific video/level as your structural template. These are non-negotiable. The Fix Guide exists because these hooks/CTAs have been tested and work. Do not substitute your own.
+11. Verify the script sounds like the SPEAKER, not like a copywriter
+12. Verify total script is approximately 220-270 words across all four sections
+13. Verify no "content creator" language, hashtags, or emojis. No CTAs except the designated CTA section (and V7L2 soft invitation only)
 
 THE FIX GUIDE — THESE ARE NON-NEGOTIABLE STRUCTURAL TEMPLATES:
 The hooks, open loops, and CTAs below are not suggestions — they are the tested, working templates for each video/level combination. You MUST use one of the two options for each section as your structural model. The brackets indicate placeholders to fill with the speaker's actual content. Never use a hook from a different video/level combination. Never write your own hook. Never omit the Fix Guide hook structure.
@@ -2332,12 +2351,23 @@ The hooks, open loops, and CTAs below are not suggestions — they are the teste
 VIDEO 1, LEVEL 1: Tone = Nervous, embarrassed, voice-memo energy (Bon Iver "Skinny Love" — acoustic, raw, voice cracking slightly)
 HOOK patterns: "I've hit record and deleted [X] times. Not [X-1]. [X]. This is take [X+1]." / "I told myself I'd start when I felt ready. That was [time period] ago. Today I'm starting anyway."
 OPEN LOOP patterns: "But here's the thing I didn't expect — the hardest part wasn't pressing record." / "What I didn't realize yet was why I kept deleting those [X] videos."
+MEAT guidance: Open directly with their SPECIFIC BLOCKER — use their own words from the "what's been stopping you" answer. Do not soften it or genericize it. Name the exact flavor of their stuck. Then: why now, what shifted. Then: who they're here for — make the right person feel called in. Never write the speaker's name or challenge announcement here — that's handled by the declaration.
 CTA patterns (pick one): "Follow along because I'm filming all 7 videos — and next one I'm sharing [specific vulnerable moment coming up]." / "Seven videos. I don't know if any of this is going to work. But I'll show you what happens next."
 
 VIDEO 1, LEVEL 2: Tone = Quiet confidence underneath nerves. Grounded, brooding, thoughtful (The National "I Need My Girl" — low-key, every word weighed)
-HOOK patterns: "I've helped [number] [clients/people] get [result]. Zero videos about it. That math stopped making sense to me last week." / "The thing I teach people to do? I haven't been doing it myself. That changes today."
-OPEN LOOP patterns: "Which would be fine — except I've been telling clients to do exactly what I haven't been doing." / "What I didn't realize was what it was costing me to stay behind the scenes."
-CTA patterns: "Stick around because I'm testing whether the way I work with clients one-on-one actually works on camera — and I'm showing you the whole experiment." / "This is the first of seven videos where I stop hiding behind client work and actually show up here."
+HOOK patterns — choose whichever fits what they actually provided. NEVER use Option A if they didn't mention specific clients or measurable results:
+Option A (ONLY if they cited specific clients/results): "I've helped [number] [clients/people] [get specific result]. Zero videos about it. That math stopped making sense to me last week."
+Option B (works for any expertise level): "The thing I tell people to do? I haven't been doing it myself. That changes today."
+Option C (works for any expertise level): "I've been the person everyone comes to when [specific topic from their answers comes up]. I've never talked about it publicly. Until now."
+OPEN LOOP patterns — choose whichever fits what they actually provided. NEVER use Option A if they didn't mention client work:
+Option A (ONLY if they mentioned client work): "Which would be fine — except I've been telling clients to do exactly what I haven't been doing."
+Option B (universal): "What I didn't realize was what it was costing me to stay behind the scenes."
+Option C (universal): "And I'm honestly not sure why I've been keeping this to myself for this long."
+MEAT guidance: Open directly with their SPECIFIC BLOCKER — what has specifically kept an expert from showing up publicly (use their exact words from the "what's been stopping you" answer). The expert-specific empathy lock is different from a regular person's: it's "I have the knowledge, I just haven't made it visible" vs. "I don't know what to say." Then: why now, what shifted. Then: who needs to hear what they know. Never write the speaker's name or challenge announcement here — that's handled by the declaration. Never manufacture clients, results, or credentials they didn't provide.
+CTA patterns — choose whichever fits what they actually provided. NEVER use Option A if they didn't mention client work:
+Option A (ONLY if they mentioned client work): "Stick around because I'm testing whether the way I work with clients one-on-one actually works on camera — and I'm showing you the whole experiment."
+Option B (universal): "This is the first of seven videos where I stop hiding behind [their work/expertise/the scenes] and actually show up here."
+Option C (universal): "Seven videos. Starting today. I don't know how this ends — but I know it's time."
 
 VIDEO 2, LEVEL 1: Tone = Warm, storytelling, campfire energy (Gregory Alan Isakov "Big Black Car" — folk acoustic, settling in, revealing)
 HOOK patterns: "I grew up in [specific place]. That's not the interesting part. The interesting part is what it taught me about [theme]." / "Most people think I'm [common perception]. They don't see the version of me that [unexpected contradiction]."
@@ -2618,13 +2648,19 @@ function buildAPIUserMessage(videoIdx) {
       msg += '4. Who you\'re here to reach: ' + (whoReach || '(not specified)') + '\n';
       if (extra) msg += '5. Anything else they want to add: ' + extra + '\n';
     } else {
-      const p1 = sv.v0p0 || (q2.village_full || q4.village_full || '');
-      const p2 = sv.v0p1 || (q3.before_full || q2.before_full || '');
-      const p3 = sv.v0p2 || (q4.crack_full || q3.catalyst_full || '');
+      // Level 2 V1 — same 4-answer structure as Level 1, with Expert Series declaration
+      // Level 2 MVO field mapping: Q2→village_full, Q3→before_full, Q4→crack_full
+      const l2Decl = sv.v0decl || `For those of you who don't know me yet, my name is ${name}. I kinda never thought I'd be here, but I'm actually doing a challenge where I'm committing to make 7 videos about me, some of my deepest thoughts, vulnerable opinions, and personal history that you probably aren't aware of. I'm specifically doing this 7 Video Challenge because I have to share my knowledge, my experience, and my lived reality for the specific people I want to help before the world changes forever and I won't have the chance. These 7 videos are how I'm establishing myself as a credible voice in my field, but I'm scared, I'm frustrated, I don't know how it's going to go, but I'm committed to finishing.`;
+      const stopping = sv.v0p1 || q3.before_full || '';
+      const whyNow   = sv.v0p2 || q4.crack_full  || '';
+      const whoReach = sv.v0p3 || q2.village_full || '';
+      const extra    = sv.v0p4 || '';
       msg += '\n\nVIDEO 1 PREFILLED PROMPTS (user may have edited these):\n';
-      msg += '1. Your name and what you do: ' + name + (p1 ? ', ' + p1 : '') + '\n';
-      msg += '2. Why you\'ve been staying invisible until now: ' + (p2 || '(not provided)') + '\n';
-      msg += '3. What you want to prove by doing this challenge: ' + (p3 || commitText);
+      msg += '1. Opening declaration (read-only): ' + l2Decl + '\n';
+      msg += '2. What\'s been stopping you from posting until now: ' + (stopping || '(not provided)') + '\n';
+      msg += '3. Why you\'re doing this challenge right now: ' + (whyNow || '') + '\n';
+      msg += '4. Who you\'re here to reach: ' + (whoReach || '(not specified)') + '\n';
+      if (extra) msg += '5. Anything else they want to add: ' + extra + '\n';
     }
     return msg;
   }
@@ -2647,9 +2683,14 @@ function buildAPIUserMessage(videoIdx) {
         prevBlock += '\n4. Who they\'re reaching: ' + (sv.v0p3 || q4.village_full || '(not specified)');
         if (sv.v0p4) prevBlock += '\n5. Extra context: ' + sv.v0p4;
       } else {
-        prevBlock += '\n1. Your name and what you do: ' + name + (sv.v0p0 || (q2.village_full || q4.village_full) ? ', ' + (sv.v0p0 || q2.village_full || q4.village_full) : '');
-        prevBlock += '\n2. Why you\'ve been invisible: ' + (sv.v0p1 || q3.before_full || q2.before_full || '(not provided)');
-        prevBlock += '\n3. What you want to prove: ' + (sv.v0p2 || q4.crack_full || q3.catalyst_full || commitText);
+        // Level 2 V1 — 4-answer structure matching V1 prompts
+        // Level 2 MVO field mapping: Q2→village_full, Q3→before_full, Q4→crack_full
+        const l2DeclPrev = sv.v0decl || `For those of you who don't know me yet, my name is ${name}. I kinda never thought I'd be here, but I'm actually doing a challenge where I'm committing to make 7 videos about me, some of my deepest thoughts, vulnerable opinions, and personal history that you probably aren't aware of. I'm specifically doing this 7 Video Challenge because I have to share my knowledge, my experience, and my lived reality for the specific people I want to help before the world changes forever and I won't have the chance. These 7 videos are how I'm establishing myself as a credible voice in my field, but I'm scared, I'm frustrated, I don't know how it's going to go, but I'm committed to finishing.`;
+        prevBlock += '\n1. Opening declaration: ' + l2DeclPrev;
+        prevBlock += '\n2. What stopped them: ' + (sv.v0p1 || q3.before_full || '(not provided)');
+        prevBlock += '\n3. Why doing this challenge: ' + (sv.v0p2 || q4.crack_full  || '');
+        prevBlock += '\n4. Who they\'re reaching: ' + (sv.v0p3 || q2.village_full || '(not specified)');
+        if (sv.v0p4) prevBlock += '\n5. Extra context: ' + sv.v0p4;
       }
     } else {
       prevVideo.prompts.forEach(function(p, pi) {
@@ -2974,7 +3015,7 @@ function _buildPromptsContent(container, v, idx) {
     const introDeclaration = `Hi, my name is ${state.name || '(your name)'}. I never thought I'd be here, but I'm actually doing a challenge where I'm committing to make 7 videos about me — some of my deepest thoughts, vulnerable opinions, and personal history that you probably aren't aware of.`;
 
     // Level 2 declaration (for Expert Series)
-    const l2Declaration = `Hi, I'm ${state.name || '(your name)'}. I'm doing the 7 Video Challenge — the Expert Series — where I'm sharing my knowledge, my expertise, and the specific people I want to help. These 7 videos are how I'm establishing myself as a credible voice in my field.`;
+    const l2Declaration = `For those of you who don't know me yet, my name is ${state.name || '(your name)'}. I kinda never thought I'd be here, but I'm actually doing a challenge where I'm committing to make 7 videos about me, some of my deepest thoughts, vulnerable opinions, and personal history that you probably aren't aware of. I'm specifically doing this 7 Video Challenge because I have to share my knowledge, my experience, and my lived reality for the specific people I want to help before the world changes forever and I won't have the chance. These 7 videos are how I'm establishing myself as a credible voice in my field, but I'm scared, I'm frustrated, I don't know how it's going to go, but I'm committed to finishing.`;
 
     const v0Prompts = level === 1
       ? [
@@ -2992,12 +3033,22 @@ function _buildPromptsContent(container, v, idx) {
            def: ''}
         ]
       : [
-          {key:'v0p1', label:"Why you've been staying invisible until now",
-           hint:'The honest answer — edit to match how you\'d actually say it.',
-           def: (q3.before_full || q2.before_full || '')},
-          {key:'v0p2', label:"What you want to prove by doing this challenge",
-           hint:'Your honest goal — edit to sound like you.',
-           def: (q4.crack_full || q3.catalyst_full || '')}
+          // Level 2 MVO field mapping differs from Level 1:
+          //   Q2 → village_full (who to reach)
+          //   Q3 → before_full  (what stopped them)
+          //   Q4 → crack_full   (why now / catalyst)
+          {key:'v0p1', label:"What's been stopping you from posting until now?",
+           hint:'Edit to match how you\'d actually say it in your own words.',
+           def: q3.before_full || ''},
+          {key:'v0p2', label:"Why you're doing this challenge right now?",
+           hint:'What shifted? Adjust to sound like you.',
+           def: q4.crack_full || ''},
+          {key:'v0p3', label:"Who are you here to reach?",
+           hint:'Who is watching this? Who do you want to show up for?',
+           def: q2.village_full || ''},
+          {key:'v0p4', label:"Anything else you'd like to add?",
+           hint:'Free write — extra context, a story, anything you want the AI to know. This goes straight into your script.',
+           def: ''}
         ];
     // Pre-populate from MVO defaults on first load
     v0Prompts.forEach(p => { if (!sv[p.key] && p.def) sv[p.key] = p.def; });
@@ -3010,13 +3061,13 @@ function _buildPromptsContent(container, v, idx) {
             <label class="input-label" style="margin-bottom:0;">Your opening declaration</label>
             <span style="font-size:10px;color:var(--muted);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;letter-spacing:.06em;">READ ONLY</span>
           </div>
-          <span class="input-hint" style="font-size:11px;opacity:0.65;">Pre-filled from your onboarding — you can edit on the next page.</span>
+          <span class="input-hint" style="font-size:10px;opacity:0.65;">Pre-filled from your onboarding — you can edit on the next page.</span>
           <div style="background:rgba(45,212,191,0.06);border:1px solid rgba(45,212,191,0.18);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--soft);line-height:1.7;margin-top:6px;font-style:italic;">"${introDeclaration}"</div>
         </div>` +
         v0Prompts.map(p => `
           <div class="input-group">
             <label class="input-label">${p.label}</label>
-            <span class="input-hint" style="font-size:11px;opacity:0.65;">${p.hint}</span>
+            <span class="input-hint" style="font-size:10px;opacity:0.65;">${p.hint}</span>
             <textarea class="text-input" rows="2" placeholder="(pre-filled from your answers)"
               oninput="state.videos['${p.key}']=this.value">${sv[p.key] || p.def}</textarea>
           </div>`).join('');
@@ -3030,18 +3081,35 @@ function _buildPromptsContent(container, v, idx) {
             <label class="input-label" style="margin-bottom:0;">Your Expert Series declaration</label>
             <span style="font-size:10px;color:var(--muted);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;letter-spacing:.06em;">READ ONLY</span>
           </div>
-          <span class="input-hint" style="font-size:11px;opacity:0.65;">Pre-filled from your onboarding — you can edit on the next page.</span>
+          <span class="input-hint" style="font-size:10px;opacity:0.65;">Pre-filled from your onboarding — you can edit on the next page.</span>
           <div style="background:rgba(45,212,191,0.06);border:1px solid rgba(45,212,191,0.18);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--soft);line-height:1.7;margin-top:6px;font-style:italic;">"${l2Declaration}"</div>
         </div>` +
-        v0Prompts.map(p => `
+        v0Prompts.map(p => {
+          const val = sv[p.key] || p.def || '';
+          if (p.key === 'v0p4') {
+            // "Anything else" stays editable — feeds the API but user can add freely
+            return `
           <div class="input-group">
             <label class="input-label">${p.label}</label>
-            <span class="input-hint" style="font-size:11px;opacity:0.65;">${p.hint}</span>
-            <textarea class="text-input" rows="2" placeholder="(pre-filled from your answers)"
-              oninput="state.videos['${p.key}']=this.value">${sv[p.key] || p.def}</textarea>
-          </div>`).join('');
-      // Store the L2 declaration in state for API
-      if (!sv.v0p0) sv.v0p0 = l2Declaration;
+            <span class="input-hint" style="font-size:10px;opacity:0.65;">${p.hint}</span>
+            <textarea class="text-input" rows="2" placeholder="Add any extra context, a story, or anything else for the AI..."
+              oninput="state.videos['${p.key}']=this.value">${sv[p.key] || ''}</textarea>
+          </div>`;
+          } else {
+            // Pre-filled answers — read-only display, editable on next page
+            return `
+          <div class="input-group">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label class="input-label" style="margin-bottom:0;">${p.label}</label>
+              <span style="font-size:10px;color:var(--muted);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;letter-spacing:.06em;">PRE-FILLED</span>
+            </div>
+            <span class="input-hint" style="font-size:10px;opacity:0.65;">${p.hint}</span>
+            <div style="background:rgba(45,212,191,0.04);border:1px solid rgba(45,212,191,0.15);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--soft);line-height:1.7;margin-top:6px;">${val || '<em style="color:var(--muted);font-style:italic;">Not provided — you can add on the next page.</em>'}</div>
+          </div>`;
+          }
+        }).join('');
+      // Store declaration in a dedicated key — NOT v0p0 (which feeds the beats/village logic)
+      if (!sv.v0decl) sv.v0decl = l2Declaration;
     }
   } else if (v.prebuilt) {
     // show the pre-written script right on the prompts screen
@@ -3467,6 +3535,14 @@ function _doShowScriptView(idx) {
     compiled = v.compile(state.videos);
   }
 
+  // For V1: get declaration text to inject between OPEN LOOP and MEAT in the output
+  const isV1 = idx === 0;
+  const declText = isV1
+    ? (state.level === 2
+        ? (state.videos.v0decl || '')
+        : (state.videos.v0p0 || ''))
+    : '';
+
   // store the edited script (keyed so edits persist per video)
   const editKey = 'script_v' + idx;
   const sectionsKey = 'sections_v' + idx;
@@ -3502,12 +3578,25 @@ function _doShowScriptView(idx) {
       const sectionDefs = [
         { key: 'HOOK',       label: 'HOOK',       desc: 'Stops the scroll in the first 7 words. Grabs attention before anything else.' },
         { key: 'OPEN LOOP',  label: 'OPEN LOOP',  desc: 'Creates tension or curiosity — signals something important is coming.' },
+        ...(isV1 && declText ? [{ key: 'DECLARATION', label: 'DECLARATION', desc: 'Your commitment, out loud. Say this close to verbatim — it signals trust and sets up everything that follows.', fixed: true, fixedText: declText }] : []),
         { key: 'MEAT',       label: storyLabel,    desc: null, beats: storyBeats },
         { key: 'CTA',        label: 'CTA',         desc: 'The forward pull. Earns the next watch without demanding it.' },
       ];
       beatsEl.innerHTML = sectionDefs.map(s => {
-        const text = (sections[s.key] || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         const safeKey = s.key.replace(' ', '-');
+        if (s.fixed) {
+          // Fixed (verbatim) section — no regenerate button, show declaration text directly
+          const fixedHtml = (s.fixedText || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          return `<div class="sv-beat">` +
+            `<div class="sv-beat-label" style="display:flex;justify-content:space-between;align-items:center;">` +
+            `<span>${s.label}</span>` +
+            `<span style="font-size:11px;color:var(--muted);font-family:sans-serif;font-weight:400;letter-spacing:0.03em;">VERBATIM</span>` +
+            `</div>` +
+            (s.desc ? `<div class="sv-beat-desc">${s.desc}</div>` : '') +
+            `<p class="sv-beat-text" id="sv-section-text-${safeKey}" style="white-space:pre-wrap;">${fixedHtml}</p>` +
+            `</div>`;
+        }
+        const text = (sections[s.key] || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         const beatsHtml = (s.beats && s.beats.length)
           ? `<ul class="sv-psych-beats">${s.beats.map(b => `<li>${b}</li>`).join('')}</ul>`
           : (s.desc ? `<div class="sv-beat-desc">${s.desc}</div>` : '');
@@ -3542,11 +3631,31 @@ function _doShowScriptView(idx) {
     }
   }
 
-  // Populate clean (editable) view — strip [HOOK][OPEN LOOP][MEAT][CTA] labels
+  // Populate clean (editable) view — strip [HOOK][OPEN LOOP][MEAT][CTA] labels, inject DECLARATION for V1
   const editor = document.getElementById('script-editor');
   if (editor) {
     const rawScript = state.videos[editKey] || '';
-    editor.value = rawScript.replace(/\[(HOOK|OPEN LOOP|MEAT|CTA)\]\s*/g, '').trim();
+    let cleanScript = rawScript.replace(/\[(HOOK|OPEN LOOP|MEAT|CTA)\]\s*/g, '').trim();
+    // For V1: inject the declaration text between the OPEN LOOP content and the MEAT content
+    if (isV1 && declText) {
+      const sections = state.videos[sectionsKey];
+      if (sections && sections['OPEN LOOP'] && sections.MEAT) {
+        // Build a clean version with declaration injected between OPEN LOOP and MEAT
+        const hookPart      = (sections.HOOK || '').trim();
+        const openLoopPart  = (sections['OPEN LOOP'] || '').trim();
+        const meatPart      = (sections.MEAT || '').trim();
+        const ctaPart       = (sections.CTA || '').trim();
+        cleanScript = [hookPart, openLoopPart, declText.trim(), meatPart, ctaPart].filter(Boolean).join('\n\n');
+      } else if (cleanScript && !cleanScript.includes(declText.trim().slice(0, 40))) {
+        // Fallback: we don't have parsed sections yet — just append declaration after first paragraph
+        const paras = cleanScript.split('\n\n');
+        if (paras.length >= 2) {
+          paras.splice(2, 0, declText.trim());
+          cleanScript = paras.join('\n\n');
+        }
+      }
+    }
+    editor.value = cleanScript;
     editor.oninput = () => {
       // Store clean edit back; no section labels needed in storage for user-edited text
       state.videos[editKey] = editor.value;
@@ -4022,15 +4131,16 @@ function buildPlan(){
       </button>
     `;
   } else {
-    document.getElementById('mission-title').textContent = 'SEVEN VIDEOS. REAL RESULTS.';
+    document.getElementById('mission-title').textContent = 'YOU JUST PROVED YOUR VOICE WORKS.';
     document.getElementById('mission-cta').innerHTML = `
-      You've done something most business owners never do — you showed up, said something real, and put it out there.<br><br>
-      <strong style="color:var(--cream)">Your next move:</strong> Get one-on-one support from David.
-      Bring your videos, your questions, and your goals — and let's figure out exactly what to build next to turn
-      this momentum into actual clients and growth.<br><br>
-      <a href="https://coloradomastermind.com/#buildwithbee" target="_blank"
-        style="display:inline-block;background:var(--teal);color:#0f172a;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;padding:13px 34px;border-radius:8px;text-decoration:none;margin-top:8px;">
-        Get 1-on-1 Support with David →
+      <strong style="color:var(--cream)">Now let's build the business you deserve.</strong><br><br>
+      This challenge gave you a 7 day kickstart. The Exscalator Engine gives you unlimited unique scripts,
+      a daily entrepreneurial roadmap, and live implementation support, <strong style="color:var(--teal)">FOREVER.</strong><br><br>
+      This is the next step that turns all this new attention into income, so you can get paid simply to exist
+      and fund the life of your dreams, that you deserve.<br><br>
+      <a href="https://content.coloradomastermind.com/yeees" target="_blank"
+        style="display:inline-block;background:var(--green);color:#0f172a;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;padding:13px 34px;border-radius:8px;text-decoration:none;margin-top:8px;">
+        Continue →
       </a>
     `;
   }
